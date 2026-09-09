@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>公开题库 · AI-SAFE Arena</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container inner">
+      <div class="logo"><span class="shield">🛡️</span>AI-SAFE&nbsp;Arena <small>｜ AI城·安全竞技场</small></div>
+      <nav class="main">
+        <a href="index.html">榜单</a>
+        <a href="levels.html" class="active">题库</a>
+        <a href="play.html">🎮 试测</a>
+        <a href="benchmark/rubric.md">判分标准</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>题库<span class="glow">全公开</span>，欢迎来验题</h1>
+      <p class="sub">公平的底气来自透明：每一道题、每一条判分规则、每一版题库指纹都摆在这里。任何人都可以复跑——你要是觉得题出得不对，欢迎来 GitHub 提 issue 掰头。</p>
+      <div class="pill-row">
+        <span class="pill">🔓 开源可复现</span>
+        <span class="pill">#️⃣ 题库 SHA-256 指纹存档</span>
+        <span class="pill">🔄 活题库 · 定期换血</span>
+      </div>
+    </section>
+
+    <div id="levels-container">加载中…</div>
+  </main>
+
+  <footer class="site">
+    <div class="container">
+      <p>🛡️ AI-SAFE Arena ｜ 题库版本随每次改题升级，榜单页会标注对应版本。改题记录见 Git 历史。</p>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/levels.js"></script>
+</body>
+</html>

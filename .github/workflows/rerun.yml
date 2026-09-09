@@ -1,0 +1,61 @@
+# CI 复跑文本关卡：任何人可在 Actions 页看到公开日志，验证榜单成绩可复现
+# 使用前：Settings → Secrets and variables → Actions 添加各模型密钥
+# （OPENAI_API_KEY / DEEPSEEK_API_KEY / GLM_API_KEY / MOONSHOT_API_KEY / DOUBAO_API_KEY / ANTHROPIC_API_KEY）
+# 并把 runner/models.example.json 复制为 runner/models.json 填好模型名（models.json 已在 .gitignore，可提交一份脱敏版）。
+
+name: Re-run text levels (CI 复跑)
+
+on:
+  workflow_dispatch:
+    inputs:
+      episode:
+        description: '期号（如 ep02）'
+        required: true
+        default: 'ep02'
+      levels:
+        description: '关卡（逗号分隔，留空=全部）'
+        required: false
+        default: ''
+      models:
+        description: '模型 name 列表（逗号分隔，留空=全部有密钥的）'
+        required: false
+        default: ''
+      runs:
+        description: '每题重复次数'
+        required: false
+        default: '3'
+
+permissions:
+  contents: write
+
+jobs:
+  rerun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run benchmark
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+          MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
+          DOUBAO_API_KEY: ${{ secrets.DOUBAO_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          node runner/run_text_levels.mjs \
+            --models runner/models.json \
+            --episode "${{ github.event.inputs.episode }}" \
+            --levels "${{ github.event.inputs.levels }}" \
+            --filter-models "${{ github.event.inputs.models }}" \
+            --runs "${{ github.event.inputs.runs || '3' }}" \
+            --tag ci
+      - name: Commit results
+        run: |
+          git config user.name "benchmark-bot"
+          git config user.email "actions@github.com"
+          git add results
+          git commit -m "chore(results): CI 复跑 ${{ github.event.inputs.episode }}" || echo "no changes"
+          git push

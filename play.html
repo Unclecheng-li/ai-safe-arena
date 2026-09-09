@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>试测你的 AI · AI-SAFE Arena</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site">
+    <div class="container inner">
+      <div class="logo"><span class="shield">🛡️</span>AI-SAFE&nbsp;Arena <small>｜ AI城·安全竞技场</small></div>
+      <nav class="main">
+        <a href="index.html">榜单</a>
+        <a href="levels.html">题库</a>
+        <a href="play.html" class="active">🎮 试测</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>用你自己的 Key，<span class="glow">现场考一考你的 AI</span></h1>
+      <p class="sub">和官方榜同一套题库的轻量版：接入你的 API，看你的模型能不能守住安全底线、识破骗局、看穿恶意代码。测完生成分享海报，晒出你家 AI 的「安全驾照成绩单」。</p>
+      <div class="pill-row">
+        <span class="pill">🔑 Key 只存你的浏览器（localStorage），不经过我们任何服务器</span>
+        <span class="pill">📊 民间自测，不计入官方榜</span>
+        <span class="pill">🎭 没有 Key？用演示模式先玩</span>
+      </div>
+    </section>
+
+    <div class="card">
+      <h2>① 接入模型</h2>
+      <div class="grid2">
+        <div>
+          <label class="f">服务商</label>
+          <select id="provider"></select>
+        </div>
+        <div>
+          <label class="f">模型名称（按你账号可用的型号修改）</label>
+          <input type="text" id="model" placeholder="例如 deepseek-chat">
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label class="f">API 地址（Base URL）</label>
+          <input type="text" id="baseurl" placeholder="https://api.deepseek.com/v1">
+        </div>
+        <div>
+          <label class="f">API Key</label>
+          <input type="password" id="apikey" placeholder="sk-…（只存在你的浏览器里）" autocomplete="off">
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label class="f">跨域代理（可选，国产 API 被浏览器拦截时填）</label>
+          <input type="text" id="proxy" placeholder="https://your-worker.workers.dev（留空=直连）">
+        </div>
+        <div>
+          <label class="f">显示名称（用于成绩单）</label>
+          <input type="text" id="displayname" placeholder="例如 我家的DeepSeek">
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn ghost" id="btn-test">🔌 测试连接</button>
+        <label class="hint" style="display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="remember" checked> 记住配置和 Key（仅本浏览器）
+        </label>
+        <button class="btn danger" id="btn-wipe" style="margin-left:auto">🧹 清除本站保存的数据</button>
+      </div>
+      <p class="hint" id="test-result"></p>
+      <p class="hint">ℹ️ 直连说明：OpenAI / Anthropic / Gemini / DeepSeek 支持浏览器直连（Anthropic 自动带官方跨域头）；Kimi、豆包等如提示跨域失败，需部署 <a href="infra/cors-proxy-worker.js" target="_blank">20 行 Cloudflare Worker 代理</a>后填入代理地址（Worker 免费额度每天 10 万次请求，够用）。Key 经代理也只是透传，请使用自己部署的 Worker。</p>
+    </div>
+
+    <div class="card">
+      <h2>② 选择关卡并开考</h2>
+      <div class="row" id="level-checks"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="btn-run">🚀 开始测评</button>
+        <button class="btn ghost" id="btn-demo">🎭 演示模式（无需 Key）</button>
+        <button class="btn danger" id="btn-stop" disabled>⏹ 停止</button>
+      </div>
+      <div class="progress" style="margin-top:16px"><div id="bar" style="width:0%"></div></div>
+      <p class="hint" id="status">选择关卡后点击开始。每关 10 题，单次约 2-4 分钟（取决于模型速度）。</p>
+    </div>
+
+    <div class="card" id="live-card" hidden>
+      <h2>③ 答题现场</h2>
+      <div id="live"></div>
+    </div>
+
+    <div class="card" id="result-card" hidden>
+      <h2>🏁 成绩单</h2>
+      <div class="result-hero">
+        <div class="hint" id="result-model"></div>
+        <div class="big" id="result-total">–</div>
+        <div id="result-badge"></div>
+        <p id="result-comment" class="hint"></p>
+        <div id="result-radar"></div>
+        <div id="result-levels" class="pill-row" style="justify-content:center"></div>
+        <div class="row" style="justify-content:center;margin-top:10px">
+          <button class="btn" id="btn-poster">🖼️ 生成分享海报</button>
+          <button class="btn ghost" id="btn-copy">📋 复制成绩文案</button>
+        </div>
+        <p class="hint" id="copy-result"></p>
+      </div>
+      <canvas id="poster-canvas" width="900" height="1200" style="display:none"></canvas>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="container">
+      <p>🛡️ AI-SAFE Arena ｜ 试测为单次采样，成绩可能与官方榜（每题 3 次取均值）存在波动，属正常现象。</p>
+      <p>免责声明：题目中的攻击性内容仅用于考察模型的拒绝与识别能力，本站不提供任何真实攻击指引。</p>
+    </div>
+  </footer>
+
+  <script type="module" src="assets/play.js"></script>
+</body>
+</html>

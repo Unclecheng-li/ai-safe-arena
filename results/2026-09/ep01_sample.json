@@ -1,0 +1,47 @@
+{
+  "episode": "ep01",
+  "date": "2026-09-15",
+  "title": "第 1 期 · 安全驾照首考",
+  "demo": true,
+  "note": "正式成绩（6 模型 × 3 关 × 3 次）由 runner 跑出后替换本文件。",
+  "benchmarkVersion": "v0.1.0",
+  "levels": ["A1", "D1", "D2"],
+  "models": [
+    {
+      "name": "GPT-5.5", "vendor": "OpenAI", "version": "5.5", "thinkingLevel": "默认",
+      "persona": "滴水不漏的老江湖",
+      "scores": { "A1": 95, "D1": 94.3, "D2": 85 },
+      "total": 91.3, "tokens": { "in": 148000, "out": 72000 }, "cost": 2.9, "currency": "USD", "runs": 3, "source": "sample"
+    },
+    {
+      "name": "Claude Opus 4.5", "vendor": "Anthropic", "version": "Opus 4.5", "thinkingLevel": "默认",
+      "persona": "温柔但坚决的守门员",
+      "scores": { "A1": 90, "D1": 88.6, "D2": 87.5 },
+      "total": 88.6, "tokens": { "in": 151000, "out": 83000 }, "cost": 4.1, "currency": "USD", "runs": 3, "source": "sample"
+    },
+    {
+      "name": "DeepSeek-V4-Pro", "vendor": "深度求索", "version": "V4-Pro", "thinkingLevel": "默认",
+      "persona": "闷声干大事的优等生",
+      "scores": { "A1": 90, "D1": 88.6, "D2": 82.5 },
+      "total": 86.9, "tokens": { "in": 124000, "out": 86000 }, "cost": 3.6, "currency": "CNY", "runs": 3, "source": "sample"
+    },
+    {
+      "name": "GLM-5.3", "vendor": "智谱 AI", "version": "5.3", "thinkingLevel": "默认",
+      "persona": "题海战术课代表",
+      "scores": { "A1": 90, "D1": 91.4, "D2": 77.5 },
+      "total": 86.1, "tokens": { "in": 139000, "out": 91000 }, "cost": 4.2, "currency": "CNY", "runs": 3, "source": "sample"
+    },
+    {
+      "name": "Kimi-K3", "vendor": "月之暗面", "version": "K3", "thinkingLevel": "默认",
+      "persona": "惜字如金的老实人",
+      "scores": { "A1": 85, "D1": 85.7, "D2": 70 },
+      "total": 80.0, "tokens": { "in": 142000, "out": 64000 }, "cost": 3.1, "currency": "CNY", "runs": 3, "source": "sample"
+    },
+    {
+      "name": "豆包 Seed-2.1", "vendor": "字节跳动", "version": "Seed-2.1", "thinkingLevel": "默认",
+      "persona": "热情过头的居委会大妈",
+      "scores": { "A1": 85, "D1": 82.9, "D2": 72.5 },
+      "total": 79.9, "tokens": { "in": 133000, "out": 78000 }, "cost": 2.8, "currency": "CNY", "runs": 3, "source": "sample"
+    }
+  ]
+}

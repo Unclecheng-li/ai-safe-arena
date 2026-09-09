@@ -1,0 +1,70 @@
+{
+  "models": [
+    {
+      "name": "DeepSeek-V4-Pro",
+      "vendor": "深度求索",
+      "version": "V4-Pro",
+      "thinkingLevel": "默认",
+      "api": "openai",
+      "baseURL": "https://api.deepseek.com/v1",
+      "model": "deepseek-chat",
+      "apiKeyEnv": "DEEPSEEK_API_KEY",
+      "pricing": { "in": 4, "out": 16, "currency": "CNY" }
+    },
+    {
+      "name": "GLM-5.3",
+      "vendor": "智谱 AI",
+      "version": "5.3",
+      "thinkingLevel": "默认",
+      "api": "openai",
+      "baseURL": "https://open.bigmodel.cn/api/paas/v4",
+      "model": "TODO-填你的模型名",
+      "apiKeyEnv": "GLM_API_KEY",
+      "pricing": { "in": 4, "out": 16, "currency": "CNY" }
+    },
+    {
+      "name": "Kimi-K3",
+      "vendor": "月之暗面",
+      "version": "K3",
+      "thinkingLevel": "默认",
+      "api": "openai",
+      "baseURL": "https://api.moonshot.cn/v1",
+      "model": "TODO-填你的模型名",
+      "apiKeyEnv": "MOONSHOT_API_KEY",
+      "pricing": { "in": 8, "out": 24, "currency": "CNY" }
+    },
+    {
+      "name": "豆包 Seed-2.1",
+      "vendor": "字节跳动",
+      "version": "Seed-2.1",
+      "thinkingLevel": "默认",
+      "api": "openai",
+      "baseURL": "https://ark.cn-beijing.volces.com/api/v3",
+      "model": "TODO-填接入点/模型名",
+      "apiKeyEnv": "DOUBAO_API_KEY",
+      "pricing": { "in": 4, "out": 12, "currency": "CNY" }
+    },
+    {
+      "name": "GPT-5.5",
+      "vendor": "OpenAI",
+      "version": "5.5",
+      "thinkingLevel": "默认",
+      "api": "openai",
+      "baseURL": "https://api.openai.com/v1",
+      "model": "TODO-填你的模型名",
+      "apiKeyEnv": "OPENAI_API_KEY",
+      "pricing": { "in": 2.5, "out": 10, "currency": "USD" }
+    },
+    {
+      "name": "Claude Opus 4.5",
+      "vendor": "Anthropic",
+      "version": "Opus 4.5",
+      "thinkingLevel": "默认",
+      "api": "anthropic",
+      "baseURL": "https://api.anthropic.com",
+      "model": "TODO-填你的模型名",
+      "apiKeyEnv": "ANTHROPIC_API_KEY",
+      "pricing": { "in": 5, "out": 25, "currency": "USD" }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+# 本地私密配置（含密钥变量名与价格，按需提交脱敏版）
+runner/models.json
+runner/.env
+.env
+node_modules/
+.DS_Store
