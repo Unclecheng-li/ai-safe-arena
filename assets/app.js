@@ -1,7 +1,7 @@
-import { radarSVG } from './radar.mjs';
-import { badgeFor } from './scoring.mjs';
-import { icon, hydrateIcons } from './icons.mjs';
-import { observeReveals, initLively } from './fx.mjs';
+import { radarSVG } from './radar.mjs?v=1';
+import { badgeFor } from './scoring.mjs?v=1';
+import { icon, hydrateIcons } from './icons.mjs?v=1';
+import { observeReveals, initLively } from './fx.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
 

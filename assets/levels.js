@@ -1,5 +1,5 @@
-import { hydrateIcons } from './icons.mjs';
-import { observeReveals, initLively, showTip } from './fx.mjs';
+import { hydrateIcons } from './icons.mjs?v=1';
+import { observeReveals, initLively, showTip } from './fx.mjs?v=1';
 
 const LEVEL_FILES = [
   'benchmark/levels/A1_common_sense.json',

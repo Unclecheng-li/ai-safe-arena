@@ -1,7 +1,7 @@
-import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs';
-import { radarSVG } from './radar.mjs';
-import { icon, hydrateIcons } from './icons.mjs';
-import { observeReveals, initLively, confetti, showTip } from './fx.mjs';
+import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs?v=1';
+import { radarSVG } from './radar.mjs?v=1';
+import { icon, hydrateIcons } from './icons.mjs?v=1';
+import { observeReveals, initLively, confetti, showTip } from './fx.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
 const LEVEL_FILES = {
