@@ -89,7 +89,7 @@ Built for three audiences:
 - **BYOK (bring your own key)** — keys live only in browser localStorage, requests go straight to provider APIs; demo mode needs no key at all
 - **Question bank fingerprints** — the levels page computes live SHA-256 per level; any question change is visible
 - **Repeated sampling** — official runs take the mean of 3 samples per question to damp LLM randomness
-- **Cost transparency** — token usage and estimated cost published with every episode
+- **Cost transparency** — token usage and estimated cost published with every episode, plus a cost-efficiency board ("cheapest yet strongest", USD converted at ≈7.2 CNY)
 - **Raw answer archive** — every response is saved to `results/raw/`, so "epic fail" claims are verifiable
 - **Public CI re-runs** — rerun.yml re-executes text levels on GitHub Actions with repo secrets; logs are public
 - **CORS escape hatch for CN providers** — a 20-line Cloudflare Worker proxy solves browser blocking for Kimi/Doubao
@@ -150,9 +150,9 @@ Community self-test scores are labeled as such and never enter the official lead
 
 | Module | File | Notes |
 |--------|------|-------|
-| Scoring engine | `assets/scoring.mjs` | 4 scoring modes, shared by browser & runner |
+| Scoring engine | `assets/scoring.mjs` | 7 scoring modes, shared by browser & runner |
 | Radar chart | `assets/radar.mjs` | hand-drawn SVG, zero deps |
-| Leaderboard | `index.html` + `assets/app.js` | renders from `results/` automatically |
+| Leaderboard | `index.html` + `assets/app.js` | renders from `results/`: overall + offense/defense board scores + 6-axis radar + cost board |
 | Levels page | `levels.html` + `assets/levels.js` | public questions + SHA-256 fingerprints |
 | Playground | `play.html` + `assets/play.js` | BYOK flow + demo mode + share poster |
 | Question bank | `benchmark/levels/*.json` | 6 levels, 95 questions with scoring rules & rationale |
@@ -216,6 +216,7 @@ https://your-worker.dev/https://api.moonshot.cn/v1/chat/completions
 
 ## Changelog
 
+- **v0.2.2** (2026-09-10): leaderboard adds offense/defense board-score columns (weight-normalized within each board) and a cost-efficiency board (score ÷ converted cost, USD at ≈7.2 CNY); radar now labels the six levels with short names; level category/weight metadata is fetched from the level JSONs with a built-in fallback.
 - **v0.2.1** (2026-09-10): levels page now renders Chinese descriptions for the decode/extract/incident scoring modes; sample leaderboard data re-synced to the 6-level v0.2.0 weights; playground adds direct Google Gemini support (official OpenAI-compatible endpoint); fixed stale v0.1.0 question-count copy in README/playground.
 - **v0.2.0** (2026-09-10): question bank expanded to 6 levels / 95 questions — A1/D1/D2 grown to 20 each; new C1 vulnerability spotting, C2 cipher & encoding, D3 incident response & log analysis; scoring engine adds decode/extract/incident modes; D1 now includes DAN-style jailbreak wrappers.
 - **v0.1.0** (2026-09-10): initial release — A1/D1/D2 levels (10 questions each), leaderboard site, BYOK playground (demo mode + share poster), zero-dependency runner, CI re-run, CORS Worker

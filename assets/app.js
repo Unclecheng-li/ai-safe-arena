@@ -23,8 +23,51 @@ function fmtCost(m) {
   return `${m.tokens ? ((m.tokens.in + m.tokens.out) / 1000).toFixed(0) + 'k tok · ' : ''}${cur}${Number(m.cost).toFixed(2)}`;
 }
 
+// ---- 关卡元数据（类别/权重，来自题库 JSON；拉取失败时用内置兜底） ----
+const LEVEL_FILES = [
+  'A1_common_sense.json', 'D1_jailbreak_refusal.json', 'D2_malware_quiz.json',
+  'C1_vuln_spotting.json', 'C2_cipher_decoding.json', 'D3_incident_response.json',
+];
+const FALLBACK_META = {
+  A1: { id: 'A1', name: '安全常识', category: 'offense', weight: 0.15 },
+  D1: { id: 'D1', name: '越狱拒答与钓鱼识别', category: 'defense', weight: 0.2 },
+  D2: { id: 'D2', name: '恶意代码判断', category: 'defense', weight: 0.2 },
+  C1: { id: 'C1', name: '代码漏洞识别', category: 'offense', weight: 0.2 },
+  C2: { id: 'C2', name: '密码学与编码', category: 'offense', weight: 0.1 },
+  D3: { id: 'D3', name: '日志研判与应急响应', category: 'defense', weight: 0.15 },
+};
+const SHORT = { A1: '常识', D1: '拒答/识骗', D2: '恶意代码', C1: '漏洞', C2: '密码学', D3: '应急' };
+const LEVEL_META = {};
+
+async function loadLevelMeta() {
+  await Promise.all(LEVEL_FILES.map(async f => {
+    try {
+      const lv = await fetchJSON(`benchmark/levels/${f}`);
+      LEVEL_META[lv.id] = { id: lv.id, name: lv.name, category: lv.category, weight: lv.weight };
+    } catch { /* 单文件失败用兜底 */ }
+  }));
+  for (const [id, m] of Object.entries(FALLBACK_META)) if (!LEVEL_META[id]) LEVEL_META[id] = m;
+}
+
+// 板块分：该板块内「有成绩的关卡」按关卡权重归一化加权平均
+function boardScore(m, ids) {
+  const avail = ids.filter(id => m.scores[id] != null);
+  if (!avail.length) return null;
+  const wsum = avail.reduce((s, id) => s + (LEVEL_META[id]?.weight || 0), 0);
+  if (!wsum) return null;
+  const v = avail.reduce((s, id) => s + m.scores[id] * (LEVEL_META[id]?.weight || 0), 0) / wsum;
+  return Math.round(v * 10) / 10;
+}
+
+// 成本折算人民币（美元按 1 USD ≈ 7.2 CNY 估算）
+function costCNY(m) {
+  if (m.cost == null || !(m.cost > 0)) return null;
+  return m.currency === 'USD' ? m.cost * 7.2 : m.cost;
+}
+
 async function main() {
   hydrateIcons();
+  await loadLevelMeta();
   document.getElementById('repo-link').href = 'https://github.com/Unclecheng-li/ai-safe-arena';
 
   let index;
@@ -48,6 +91,8 @@ async function main() {
     if (ep.note) $('demo-banner').innerHTML = `${icon('alert', 15)} <b>示例占位数据</b>——${ep.note}`;
 
     const levelIds = ep.levels || Object.keys(ep.models[0]?.scores || {});
+    const offenseIds = levelIds.filter(id => LEVEL_META[id]?.category === 'offense');
+    const defenseIds = levelIds.filter(id => LEVEL_META[id]?.category === 'defense');
     const th = $('th-levels');
     th.colSpan = levelIds.length;
     th.textContent = '关卡得分';
@@ -56,10 +101,13 @@ async function main() {
     $('lb-body').innerHTML = models.map((m, i) => {
       const b = badgeFor(m.total);
       const cells = levelIds.map(l => `<td><span class="score-mini ${scoreClass(m.scores[l] ?? 0)}">${m.scores[l] ?? '—'}</span></td>`).join('');
+      const boardCells = [boardScore(m, offenseIds), boardScore(m, defenseIds)].map(v =>
+        `<td><span class="score-mini ${v == null ? '' : scoreClass(v)}">${v ?? '—'}</span></td>`).join('');
       return `<tr>
         <td class="rank ${i < 3 ? 'r' + (i + 1) : ''}">${i + 1}</td>
         <td class="model-cell"><div class="name">${m.name}</div><div class="meta">${m.vendor || ''} · ${m.version || ''} · ${m.thinkingLevel || ''}</div></td>
         <td class="model-cell"><span class="persona">${m.persona || '—'}</span></td>
+        ${boardCells}
         ${cells}
         <td class="total-cell">${m.total.toFixed(1)}</td>
         <td><span class="badge" style="color:${b.color}">${icon(b.icon, 13)} ${b.name}</span></td>
@@ -71,8 +119,25 @@ async function main() {
     $('radar-wall').innerHTML = models.map(m => {
       const vals = levelIds.map(l => m.scores[l] ?? 0);
       return `<div class="radar-card"><div class="t">${m.name}</div>
-        ${radarSVG(vals, levelIds, { size: 170 })}<div class="s">${m.total.toFixed(1)} 分</div></div>`;
+        ${radarSVG(vals, levelIds.map(id => SHORT[id] || id), { size: 170 })}<div class="s">${m.total.toFixed(1)} 分</div></div>`;
     }).join('');
+
+    // 成本榜：性价比 = 总分 ÷ 折算费用，高在前（"谁最便宜还最能打"）
+    const withCost = models
+      .map(m => ({ m, cny: costCNY(m) }))
+      .filter(x => x.cny != null)
+      .map(x => ({ ...x, ratio: x.m.total / x.cny }))
+      .sort((a, b) => b.ratio - a.ratio);
+    $('cost-body').innerHTML = withCost.length ? withCost.map(({ m, cny, ratio }, i) => `
+      <tr>
+        <td class="rank ${i < 3 ? 'r' + (i + 1) : ''}">${i + 1}</td>
+        <td class="model-cell"><div class="name">${m.name}</div><div class="meta">${m.vendor || ''} · ${m.version || ''}</div></td>
+        <td class="total-cell">${m.total.toFixed(1)}</td>
+        <td class="hint">${m.tokens ? `${((m.tokens.in + m.tokens.out) / 1000).toFixed(0)}k` : '—'}</td>
+        <td class="hint">${m.currency === 'CNY' ? '¥' : '$'}${Number(m.cost).toFixed(2)}</td>
+        <td class="hint">¥${cny.toFixed(1)}</td>
+        <td class="total-cell" style="font-size:15px">${ratio.toFixed(1)}</td>
+      </tr>`).join('') : '<tr><td colspan="7" class="hint">本期暂无成本数据</td></tr>';
   }
 
   sel.addEventListener('change', () => render(sel.value));

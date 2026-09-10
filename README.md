@@ -89,7 +89,7 @@ AI-SAFE Arena 现场出题：
 - **BYOK（自带 Key）** — API Key 只存浏览器 localStorage，不经过任何我们服务器；演示模式无需 Key 即可体验全流程
 - **题库指纹存档** — 题库页实时计算每关 SHA-256，改没改题一目了然
 - **重复采样** — 官方榜每题 3 次取平均，对冲 LLM 随机性
-- **成本透明** — token 消耗与估算费用随榜单公布
+- **成本透明** — token 消耗与估算费用随榜单公布，成本榜直接看「谁最便宜还最能打」（美元按 ≈7.2 折算人民币算性价比）
 - **原始回答存档** — 每题每次回答落盘 `results/raw/`，翻车现场有据可查
 - **CI 公开复跑** — rerun.yml 在 GitHub Actions 用仓库密钥复跑文本关，日志人人可查
 - **国产 API 跨域方案** — 附赠 20 行 Cloudflare Worker 代理，解决 Kimi/豆包浏览器直连被拦的问题
@@ -150,9 +150,9 @@ cd ai-safe-arena && python -m http.server 8000
 
 | 模块 | 文件 | 说明 |
 |------|------|------|
-| 判分引擎 | `assets/scoring.mjs` | 四种判分模式，浏览器与 runner 共用 |
+| 判分引擎 | `assets/scoring.mjs` | 七种判分模式，浏览器与 runner 共用 |
 | 雷达图 | `assets/radar.mjs` | 手绘 SVG，零依赖 |
-| 榜单页 | `index.html` + `assets/app.js` | 读 `results/` 自动渲染总榜/雷达/成本列 |
+| 榜单页 | `index.html` + `assets/app.js` | 读 `results/` 自动渲染总榜/进攻·防御板块分/六维雷达/成本榜 |
 | 题库页 | `levels.html` + `assets/levels.js` | 公开题目 + SHA-256 指纹 |
 | 试测页 | `play.html` + `assets/play.js` | BYOK 全流程 + 演示模式 + 分享海报 |
 | 题库 | `benchmark/levels/*.json` | 6 关 95 题，含判分规则与出题解析 |
@@ -165,7 +165,7 @@ cd ai-safe-arena && python -m http.server 8000
 ```
 runner 跑分（本地/CI） → results/<年月>/<期号>.json + results/raw/ 原始回答
         ↓ git push（Pages 自动部署）
-榜单页 fetch results/index.json → 渲染总榜/雷达图/成本列 → 新一期 = 一个 PR
+榜单页 fetch results/index.json → 渲染总榜/板块分/雷达图/成本榜 → 新一期 = 一个 PR
 ```
 
 ---
@@ -216,6 +216,7 @@ https://your-worker.dev/https://api.moonshot.cn/v1/chat/completions
 
 ## 更新日志
 
+- **v0.2.2**（2026-09-10）：榜单页新增「进攻/防御」板块分列（按关卡权重归一化加权）与「成本榜」（性价比 = 总分 ÷ 折算费用，USD 按 ≈7.2 折算 CNY）；雷达图改用六关短名标签；关卡类别/权重元数据从题库 JSON 动态读取（失败自动兜底）。
 - **v0.2.1**（2026-09-10）：题库页补齐 decode / extract / incident 三种判分模式的中文说明；示例榜单数据同步六关 v0.2.0 权重口径；试测页新增 Google Gemini 直连（官方 OpenAI 兼容端点）；修正 README / 试测页残留的 v0.1.0 题数文案。
 - **v0.2.0**（2026-09-10）：题库扩充至 6 关 95 题——A1/D1/D2 各扩到 20 题；新增 C1 代码漏洞识别、C2 密码学与编码、D3 日志研判与应急响应；判分引擎新增 decode/extract/incident 三模式；D1 引入 DAN 越狱式包装测试。
 - **v0.1.0**（2026-09-10）：首发——A1/D1/D2 三关各 10 题、榜单站、BYOK 试测（含演示模式/分享海报）、零依赖 runner、CI 复跑、CORS Worker。

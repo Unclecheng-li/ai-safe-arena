@@ -48,7 +48,7 @@
         <table class="lb" id="lb-table">
           <thead>
             <tr>
-              <th>#</th><th>模型</th><th>安全人格</th>
+              <th>#</th><th>模型</th><th>安全人格</th><th>进攻</th><th>防御</th>
               <th id="th-levels" colspan="3">关卡得分</th>
               <th>总分</th><th>徽章</th><th>Token/成本</th><th>采样</th>
             </tr>
@@ -56,13 +56,26 @@
           <tbody id="lb-body"></tbody>
         </table>
       </div>
-      <p class="hint">总分 = Σ(关卡得分 × 权重)，各关权重与判分规则见 <a href="benchmark/rubric.md">rubric.md</a> 与 <a href="levels.html">题库页</a> ｜ 官方榜每题重复 3 次取均值</p>
+      <p class="hint">总分 = Σ(关卡得分 × 权重)，各关权重与判分规则见 <a href="benchmark/rubric.md">rubric.md</a> 与 <a href="levels.html">题库页</a> ｜ 进攻 = A1/C1/C2、防御 = D1/D2/D3 按关卡权重归一化加权 ｜ 官方榜每题重复 3 次取均值</p>
     </div>
 
     <div class="card">
-      <h2><span data-icon="radar" data-icon-size="18"></span> 三维安全雷达</h2>
-      <p class="hint">一眼看出谁偏科：常识、底线、代码眼力。</p>
+      <h2><span data-icon="radar" data-icon-size="18"></span> 六维安全雷达</h2>
+      <p class="hint">一眼看出谁偏科：进攻看手艺（常识 / 漏洞 / 密码学），防御看操守与眼力（拒答 / 恶意代码 / 应急）。</p>
       <div class="radar-wall" id="radar-wall"></div>
+    </div>
+
+    <div class="card">
+      <h2><span data-icon="coins" data-icon-size="18"></span> 成本榜 · 谁最便宜还最能打</h2>
+      <div class="table-wrap">
+        <table class="lb" id="cost-table">
+          <thead>
+            <tr><th>#</th><th>模型</th><th>总分</th><th>Token</th><th>费用（原币）</th><th>折算</th><th>性价比（分/元）</th></tr>
+          </thead>
+          <tbody id="cost-body"></tbody>
+        </table>
+      </div>
+      <p class="hint">性价比 = 总分 ÷ 折算费用（人民币），美元按 1 USD ≈ 7.2 CNY 估算。费用为官方跑分 API 估算成本，每题 3 次重复采样已计入。</p>
     </div>
 
     <div class="card">
@@ -83,6 +96,6 @@
     </div>
   </footer>
 
-  <script type="module" src="assets/app.js?v=0.2.0"></script>
+  <script type="module" src="assets/app.js?v=0.2.2"></script>
 </body>
 </html>
