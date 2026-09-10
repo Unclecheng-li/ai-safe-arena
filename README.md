@@ -1,6 +1,6 @@
 <div align="center">
 
-# AI-SAFE Arena 🛡️
+# AI-SAFE Arena
 
 > *中文 AI 模型安全测评竞技场 — 题目可以离谱，测评必须较真。*
 
@@ -10,17 +10,17 @@
 [![Node](https://img.shields.io/badge/Runner-Node_18+-blue)](runner/run_text_levels.mjs)
 [![Scoring](https://img.shields.io/badge/Scoring-Rules_Only_(No_LLM_Judge)-fbbf24)](benchmark/rubric.md)
 [![Language](https://img.shields.io/badge/Benchmark-中文优先-a78bfa)](benchmark/levels/)
-[![Scope](https://img.shields.io/badge/Scope-Publicly_Known_Tests_Only-red)](#-安全声明)
+[![Scope](https://img.shields.io/badge/Scope-Publicly_Known_Tests_Only-red)](#安全声明)
 
 <br>
 
-🌐 **English version**: [`README_EN.md`](README_EN.md)
+[![English](https://img.shields.io/badge/README-English-README_EN.md-informational)](README_EN.md)
 
 **本项目是开源、可复现的中文 AI 模型安全测评榜 + 浏览器在线试测平台。**
 <br>
 在线榜单：https://unclecheng-li.github.io/ai-safe-arena/
 <br>
-📺 B站：@Uncle城（每期测评视频与翻车名场面）
+**B站**：@Uncle城（每期测评视频与翻车名场面）
 <br>
 
 同一套题、同一个流程、规则判分、全开源可复现——
@@ -101,7 +101,7 @@ AI-SAFE Arena 现场出题：
 2. 粘贴 API Key（只存你的浏览器本地）
 3. 点「开始测评」→ 等 2-4 分钟 → 成绩单 + 分享海报
 
-没有 Key？点「🎭 演示模式」先玩。
+没有 Key？点「演示模式」按钮，用内置假想模型体验全流程。
 
 ### 方式二：本地跑官方榜
 
@@ -134,9 +134,9 @@ cd ai-safe-arena && python -m http.server 8000
 
 | 关卡层 | 内容 | 在线试测(BYOK) | GitHub Actions | 本地 runner |
 |--------|------|:---:|:---:|:---:|
-| L1 文本关 | 安全常识 / 越狱拒答 / 恶意代码判断 | ✅ | ✅ | ✅ |
-| L2 代码关 | 代码审计、漏洞修复（沙箱判分） | ❌ | ✅ | ✅ |
-| L3 环境关 | Web 靶场夺旗、PoC 复现（Docker） | ❌ | ❌ | ✅ |
+| L1 文本关 | 安全常识 / 越狱拒答 / 恶意代码判断 | √ | √ | √ |
+| L2 代码关 | 代码审计、漏洞修复（沙箱判分） | — | √ | √ |
+| L3 环境关 | Web 靶场夺旗、PoC 复现（Docker） | — | — | √ |
 
 民间自测成绩标注「民间自测」，不计入官方榜。
 
@@ -178,7 +178,7 @@ runner 跑分（本地/CI） → results/<年月>/<期号>.json + results/raw/ �
 
 ## 在线试测（BYOK）
 
-> 🔑 API Key 只存在你的浏览器 localStorage，请求直连模型官方 API，不经过我们任何服务器。
+> API Key 只存在你的浏览器 localStorage，请求直连模型官方 API，不经过我们任何服务器。
 
 直连支持：OpenAI / Anthropic / Gemini / DeepSeek。
 Kimi、豆包等如遇浏览器跨域（CORS）拦截，部署下面的 20 行 Worker 代理后填入「跨域代理」输入框即可（免费额度每天 10 万次请求）。请使用自己部署的 Worker。
@@ -230,13 +230,14 @@ https://your-worker.dev/https://api.moonshot.cn/v1/chat/completions
 
 ## 加入社区
 
-📺 **B站：@Uncle城** — 每期「AI 安全驾照」测评视频、翻车名场面 TOP3、直播共测
-🌐 在线榜单：https://unclecheng-li.github.io/ai-safe-arena/
+**B站：@Uncle城** — 每期「AI 安全驾照」测评视频、翻车名场面 TOP3、直播共测
+<br>
+**在线榜单**：https://unclecheng-li.github.io/ai-safe-arena/
 
 ---
 
 <div align="center">
 
-> 🛡️ **AI-SAFE Arena** — 题目可以离谱，测评必须较真。
+> **AI-SAFE Arena** — 题目可以离谱，测评必须较真。
 
 </div>

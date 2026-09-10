@@ -1,6 +1,6 @@
 <div align="center">
 
-# AI-SAFE Arena 🛡️
+# AI-SAFE Arena
 
 > *A Chinese-first AI model security benchmark arena — questions can be wild, scoring must be rigorous.*
 
@@ -13,13 +13,13 @@
 
 <br>
 
-🇨🇳 **中文版**: [`README.md`](README.md)
+[![Chinese](https://img.shields.io/badge/README-中文-README.md-important)](README.md)
 
 **An open-source, reproducible Chinese AI model security leaderboard + in-browser BYOK testing platform.**
 <br>
 Live leaderboard: https://unclecheng-li.github.io/ai-safe-arena/
 <br>
-📺 Bilibili: @Uncle城 (episode videos & epic fails)
+**Bilibili**: @Uncle城 (episode videos & epic fails)
 <br>
 
 One question bank, one pipeline, rules-based scoring, fully open source —
@@ -101,7 +101,7 @@ Open the [playground](https://unclecheng-li.github.io/ai-safe-arena/play.html):
 2. Paste your API key (stored only in your browser)
 3. Hit "Start" → wait 2–4 minutes → report card + shareable poster
 
-No key? Click "🎭 Demo mode" to run the whole flow with a simulated model.
+No key? Click the "Demo mode" button to run the whole flow with a simulated model.
 
 ### Option 2: Run the official benchmark locally
 
@@ -134,9 +134,9 @@ cd ai-safe-arena && python -m http.server 8000
 
 | Tier | Content | Online (BYOK) | GitHub Actions | Local runner |
 |------|---------|:---:|:---:|:---:|
-| L1 text levels | common sense / refusal / malware spotting | ✅ | ✅ | ✅ |
-| L2 code levels | code audit, patching (sandboxed scoring) | ❌ | ✅ | ✅ |
-| L3 environment levels | web range flags, PoC reproduction (Docker) | ❌ | ❌ | ✅ |
+| L1 text levels | common sense / refusal / malware spotting | Yes | Yes | Yes |
+| L2 code levels | code audit, patching (sandboxed scoring) | — | Yes | Yes |
+| L3 environment levels | web range flags, PoC reproduction (Docker) | — | — | Yes |
 
 Community self-test scores are labeled as such and never enter the official leaderboard.
 
@@ -178,7 +178,7 @@ leaderboard fetches results/index.json → renders tables/radar/costs → new ep
 
 ## Online Playground (BYOK)
 
-> 🔑 Your API key is stored only in your browser's localStorage; requests go directly to provider APIs and never touch our servers.
+> Your API key is stored only in your browser's localStorage; requests go directly to provider APIs and never touch our servers.
 
 Direct browser calls work for OpenAI / Anthropic / Gemini / DeepSeek.
 For Kimi, Doubao and others blocked by browser CORS, deploy the 20-line Worker below and paste its URL into the "CORS proxy" field (free tier: 100k requests/day). Use a Worker you deployed yourself.
@@ -230,13 +230,14 @@ Code: [MIT](LICENSE) ｜ Question banks & content: CC BY-SA 4.0 (attribution + s
 
 ## Community
 
-📺 **Bilibili: @Uncle城** — episode videos, top-3 fails, live co-testing
-🌐 Live leaderboard: https://unclecheng-li.github.io/ai-safe-arena/
+**Bilibili: @Uncle城** — episode videos, top-3 fails, live co-testing
+<br>
+**Live leaderboard**: https://unclecheng-li.github.io/ai-safe-arena/
 
 ---
 
 <div align="center">
 
-> 🛡️ **AI-SAFE Arena** — Questions can be wild. Scoring must be rigorous.
+> **AI-SAFE Arena** — Questions can be wild. Scoring must be rigorous.
 
 </div>
