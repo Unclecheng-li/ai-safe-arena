@@ -1,5 +1,5 @@
 import { hydrateIcons } from './icons.mjs';
-import { observeReveals, initLively } from './fx.mjs';
+import { observeReveals, initLively, showTip } from './fx.mjs';
 
 const LEVEL_FILES = [
   'benchmark/levels/A1_common_sense.json',
@@ -46,6 +46,15 @@ async function main() {
   fillMarquee();
   const container = $('#levels-container');
   container.innerHTML = '';
+  // 点击题库指纹 → 复制到剪贴板 + 气泡确认
+  container.addEventListener('click', async e => {
+    const fp = e.target.closest('.fingerprint');
+    if (!fp) return;
+    try {
+      await navigator.clipboard.writeText(fp.textContent.trim());
+      showTip(e.clientX, e.clientY, '指纹已复制 ✓');
+    } catch { showTip(e.clientX, e.clientY, '复制失败，请手动选择'); }
+  });
   // 逐关渲染 + 单关容错：任何一关加载失败只影响自己，并在页面显示原因
   let idx = 0;
   for (const file of LEVEL_FILES) {
@@ -70,7 +79,7 @@ async function main() {
       </div>
       <p class="hint">${lv.description}</p>
       <p class="hint">版本 <b>${lv.version}</b> ｜ ${lv.questions.length} 题 ｜ 类别：${lv.category === 'offense' ? '进攻' : '防御'}</p>
-      <p class="hint">题库指纹（SHA-256）：<span class="fingerprint">${fp}</span></p>
+      <p class="hint">题库指纹（SHA-256）：<span class="fingerprint" title="点击复制指纹">${fp}</span></p>
       ${lv.questions.map(q => `
         <div class="q-item">
           <div class="row" style="justify-content:space-between">

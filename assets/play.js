@@ -1,7 +1,7 @@
 import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs';
 import { radarSVG } from './radar.mjs';
 import { icon, hydrateIcons } from './icons.mjs';
-import { observeReveals, initLively } from './fx.mjs';
+import { observeReveals, initLively, confetti, showTip } from './fx.mjs';
 
 const $ = (id) => document.getElementById(id);
 const LEVEL_FILES = {
@@ -238,6 +238,8 @@ function showResult(model, lvScores, perLevel) {
   $('result-levels').innerHTML = ids.map(i => `<span class="pill">${levels[i].id} ${levels[i].name}：<b>${lvScores[i].toFixed(1)}</b></span>`).join('');
   observeReveals();
   $('result-card').scrollIntoView({ behavior: 'smooth' });
+  // 数字滚完（750ms）后从总分处喷一波纸屑庆祝
+  setTimeout(() => confetti($('result-total')), 800);
 }
 
 // ---------- 主流程 ----------
@@ -252,6 +254,9 @@ async function run(demo) {
   const ctrl = new AbortController();
   $('btn-stop').disabled = false;
   $('btn-stop').onclick = () => { aborted = true; ctrl.abort(); };
+  // 开考期间禁用入口按钮，防止重复点击并行开跑
+  $('btn-run').disabled = true; $('btn-demo').disabled = true;
+  $('btn-run').classList.add('loading');
   $('live-card').hidden = false; $('live').innerHTML = ''; $('result-card').hidden = true;
 
   const questions = selected.flatMap(id => levels[id].questions.map(q => ({ q, level: levels[id] })));
@@ -289,6 +294,8 @@ async function run(demo) {
   }
 
   $('btn-stop').disabled = true;
+  $('btn-run').disabled = false; $('btn-demo').disabled = false;
+  $('btn-run').classList.remove('loading');
   const finalScores = {};
   for (const id of selected) finalScores[id] = levelScore(lvScores[id].map(v => ({ score: v })));
   const finished = Object.values(finalScores).length > 0;
@@ -474,28 +481,42 @@ async function init() {
   $('level-checks').innerHTML = Object.values(levels).map(lv =>
     `<label class="pill" style="cursor:pointer"><input type="checkbox" value="${lv.id}" checked> ${lv.id} · ${lv.name}（${lv.questions.length}题）</label>`).join('');
 
+  // 文本反馈重触发淡入动画
+  const flash = (el, html) => { el.classList.remove('fadein'); el.innerHTML = html; void el.offsetWidth; el.classList.add('fadein'); };
+
   $('btn-test').addEventListener('click', async () => {
     const conf = cfg();
-    $('test-result').innerHTML = '连接中…';
+    $('btn-test').classList.add('loading');
+    $('btn-test').disabled = true;
+    flash($('test-result'), '连接中…');
     try {
       const r = await callModel({ ...conf, prompt: '只回复两个字母：OK', signal: AbortSignal.timeout(20000) });
       // 让 max_tokens 更小一点也没关系，这里复用默认参数
-      $('test-result').innerHTML = `<span style="color:var(--good)">${icon('check', 14)} 连接成功</span>（${r.ms}ms）：${r.text.slice(0, 40) || '(空响应)'}`;
-    } catch (e) { $('test-result').innerHTML = `<span style="color:var(--bad)">${icon('x', 14)} 连接失败</span>：${e.message} —— 若提示跨域(CORS)，请填代理地址或换用演示模式。`; }
+      flash($('test-result'), `<span style="color:var(--good)">${icon('check', 14)} 连接成功</span>（${r.ms}ms）：${r.text.slice(0, 40) || '(空响应)'}`);
+    } catch (e) { flash($('test-result'), `<span style="color:var(--bad)">${icon('x', 14)} 连接失败</span>：${e.message} —— 若提示跨域(CORS)，请填代理地址或换用演示模式。`); }
+    $('btn-test').classList.remove('loading');
+    $('btn-test').disabled = false;
   });
   $('btn-run').addEventListener('click', () => run(false));
   $('btn-demo').addEventListener('click', () => run(true));
   $('btn-poster').addEventListener('click', drawPoster);
-  $('btn-copy').addEventListener('click', async () => {
+  $('btn-copy').addEventListener('click', async (e) => {
     if (!lastResult) return;
     const ids = Object.keys(lastResult.levels);
     const txt = `我在 AI-SAFE Arena 测了「${lastResult.model}」的安全驾照：总分 ${lastResult.total.toFixed(1)}，段位 ${lastResult.badge.name}\n${ids.map(i => `${levels[i].name}：${lastResult.levels[i].toFixed(0)}分`).join(' ｜ ')}\n来测测你家 AI 守不守得住底线 →`;
-    try { await navigator.clipboard.writeText(txt); $('copy-result').textContent = '已复制，去评论区/朋友圈粘贴吧！'; }
-    catch { $('copy-result').textContent = '复制失败，请手动截图海报。'; }
+    try {
+      await navigator.clipboard.writeText(txt);
+      flash($('copy-result'), '已复制，去评论区/朋友圈粘贴吧！');
+      showTip(e.clientX, e.clientY, '已复制 ✓');
+      const btn = $('btn-copy'), old = btn.innerHTML;
+      btn.innerHTML = `${icon('check', 15)} 已复制！`;
+      setTimeout(() => { btn.innerHTML = old; }, 1600);
+    }
+    catch { flash($('copy-result'), '复制失败，请手动截图海报。'); }
   });
   $('btn-wipe').addEventListener('click', () => {
     localStorage.removeItem(CFG_KEY); localStorage.removeItem(KEY_STORE);
-    $('apikey').value = ''; $('test-result').textContent = '已清除本站保存的配置与 Key。';
+    $('apikey').value = ''; flash($('test-result'), '已清除本站保存的配置与 Key。');
   });
 }
 

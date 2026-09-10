@@ -1,5 +1,5 @@
 /* ============================================================
-   AI-SAFE Arena · AI城安全竞技场 —— 全站样式 v0.3.0
+   AI-SAFE Arena · AI城安全竞技场 —— 全站样式 v0.3.2
    设计语言：新粗野主义（Neo-Brutalism）× 驾考传单 × 安全警示带
    纸米底色 / 粗墨边框 / 硬阴影 / 六色色块 / 印章贴纸 / 零依赖
    ============================================================ */
@@ -17,6 +17,8 @@
   --orange:  #FF9F1C;
   --pink:    #FF8FAB;
   --purple:  #B388FF;
+  --good:    #00966E;
+  --bad:     var(--red);
   --bd: 3px solid var(--ink);
   --bd2: 2px solid var(--ink);
   --sh:   7px 7px 0 var(--ink);
@@ -612,10 +614,85 @@ button.btn:hover svg.icon { animation: wiggle .5s ease-in-out; }
 .lv-id { transition: transform .15s; }
 .lv-head:hover .lv-id { transform: rotate(3deg) scale(1.06); }
 
+/* ============================================================
+   微交互补充层（v0.3.2）—— 反馈闭环 + 里程碑惊喜
+   ============================================================ */
+
+/* 成绩单里程碑纸屑：硬边方形彩纸（fx.mjs confetti 注入 .confetti-bit） */
+.confetti-bit {
+  position: fixed; z-index: 999; width: 9px; height: 9px;
+  border: 2px solid var(--ink); pointer-events: none;
+  animation: confetti-fly var(--dur, 1.2s) cubic-bezier(.15, .8, .4, 1) forwards;
+}
+@keyframes confetti-fly {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  40%  { transform: translate(calc(var(--dx) * .5), var(--up)) rotate(calc(var(--rot) * .5)); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
+
+/* 翻车题卡震一下（与 rise 入场叠加） */
+.qcard.fail { animation: rise .3s ease backwards, qshake .4s .18s ease-in-out; }
+@keyframes qshake {
+  25% { transform: translateX(-5px) rotate(-.6deg); }
+  55% { transform: translateX(4px) rotate(.5deg); }
+  80% { transform: translateX(-2px); }
+}
+
+/* 按钮 loading：图标旋转 + 防重复点击 */
+button.btn.loading { pointer-events: none; opacity: .8; }
+button.btn.loading svg.icon { animation: spin .8s linear infinite; }
+
+/* 复选 pill 勾选瞬间弹跳（:has 状态匹配自动触发） */
+#level-checks label.pill:has(input:checked) { animation: pillpop .28s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes pillpop { 40% { transform: scale(1.12) rotate(-2deg); } }
+
+/* details 展开内容淡入下滑（题库解析 / 模型回答通用） */
+details[open] > p, details[open] > pre { animation: detailin .25s ease; }
+@keyframes detailin { from { opacity: 0; transform: translateY(-6px); } }
+
+/* logo 盾牌 hover 快速摇摆 */
+.logo:hover .shield-badge { animation: wig .5s ease-in-out; }
+@keyframes wig { 30% { transform: rotate(-12deg); } 65% { transform: rotate(6deg); } }
+
+/* 文本反馈闪现（连接结果 / 复制提示） */
+.fadein { animation: detailin .3s ease; }
+
+/* 题库指纹可点击复制 */
+.fingerprint { cursor: copy; transition: background .12s, transform .12s; }
+.fingerprint:hover { background: rgba(255, 208, 47, .35); transform: translate(-1px, -1px); }
+
+/* 复制成功气泡（fx.mjs showTip 注入 .copy-tip） */
+.copy-tip {
+  position: fixed; z-index: 999; pointer-events: none;
+  background: var(--ink); color: var(--yellow);
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  border: var(--bd2); border-radius: 999px; padding: 4px 12px;
+  box-shadow: var(--sh-xs); white-space: nowrap;
+  animation: tip-pop 1.1s ease forwards;
+}
+@keyframes tip-pop {
+  0% { transform: translate(-50%, 0) scale(.7); opacity: 0; }
+  18% { transform: translate(-50%, -14px) scale(1.05); opacity: 1; }
+  30% { transform: translate(-50%, -18px) scale(1); }
+  75% { transform: translate(-50%, -26px); opacity: 1; }
+  100% { transform: translate(-50%, -38px); opacity: 0; }
+}
+
+/* 成绩单关卡 pill 交错弹入（showResult 重建 innerHTML 时重播） */
+#result-levels .pill { animation: pillpop .3s cubic-bezier(.2, 1.6, .4, 1) backwards; }
+#result-levels .pill:nth-child(2) { animation-delay: .06s; }
+#result-levels .pill:nth-child(3) { animation-delay: .12s; }
+#result-levels .pill:nth-child(4) { animation-delay: .18s; }
+#result-levels .pill:nth-child(5) { animation-delay: .24s; }
+#result-levels .pill:nth-child(6) { animation-delay: .30s; }
+
 /* 全部动画在 reduced-motion 下一键关闭 */
 @media (prefers-reduced-motion: reduce) {
   .tape, .crown, .podium-card.p1, .badge, .cta-card .btn.big,
   .hero h1 .ch, .rp, .rd, #lb-body tr, #cost-body tr,
-  body::before, body::after, .burst-bit { animation: none !important; }
-  button.btn:hover svg.icon { animation: none !important; }
+  body::before, body::after, .burst-bit, .confetti-bit,
+  .qcard.fail, button.btn.loading svg.icon,
+  #level-checks label.pill:has(input:checked), details[open] > p, details[open] > pre,
+  .fadein, .copy-tip, #result-levels .pill, .stamp.stamp-anim, .badge.stamp-anim { animation: none !important; }
+  button.btn:hover svg.icon, .logo:hover .shield-badge { animation: none !important; }
 }

@@ -4,27 +4,38 @@
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const io = new IntersectionObserver(entries => {
+// 环境不支持 IO 时全部直接显示（fail-open：绝不让内容停在不可见状态）
+const HAS_IO = typeof IntersectionObserver !== 'undefined';
+const io = HAS_IO ? new IntersectionObserver(entries => {
   for (const e of entries) {
     if (!e.isIntersecting) continue;
-    e.target.classList.add('in');
-    if (e.target.dataset.count) countUp(e.target);
-    const badge = e.target.querySelector('.badge:not(.stamp-anim)');
-    if (badge) badge.classList.add('stamp-anim');
+    revealNow(e.target);
     io.unobserve(e.target);
   }
-}, { threshold: 0.1 });
+}, { threshold: 0.1 }) : null;
+
+function revealNow(el) {
+  el.classList.add('in');
+  if (el.dataset.count) countUp(el);
+  const badge = el.querySelector('.badge:not(.stamp-anim)');
+  if (badge) badge.classList.add('stamp-anim');
+}
 
 // 给 root 下所有 .rv 元素挂上观察（root 省略时全文档）
 export function observeReveals(root = document) {
-  root.querySelectorAll('.rv:not(.in)').forEach(el => io.observe(el));
+  try {
+    root.querySelectorAll('.rv:not(.in)').forEach(el => io ? io.observe(el) : revealNow(el));
+  } catch {
+    root.querySelectorAll('.rv').forEach(el => el.classList.add('in'));
+  }
 }
 
-// 数字从 0 滚到 data-count 值
+// 数字从 0 滚到 data-count 值（reduced-motion 下直接显示终值）
 function countUp(el) {
   const target = parseFloat(el.dataset.count);
   if (isNaN(target)) return;
   const dec = (el.dataset.count.split('.')[1] || '').length;
+  if (REDUCED) { el.textContent = target.toFixed(dec); return; }
   const t0 = performance.now(), dur = 750;
   (function tick(t) {
     const p = Math.min(1, (t - t0) / dur);
@@ -100,6 +111,39 @@ function burst(x, y) {
     document.body.appendChild(b);
     setTimeout(() => b.remove(), 700);
   }
+}
+
+// ---- 里程碑纸屑：硬边方形彩纸从元素中心喷射（新粗野五色 + 墨描边） ----
+const CONFETTI_COLORS = ['#FFD02F', '#FF5A5F', '#4D7CFE', '#06D6A0', '#FF9F1C', '#FF8FAB'];
+export function confetti(el, n = 26) {
+  if (REDUCED || !el) return;
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < n; i++) {
+    const b = document.createElement('span');
+    b.className = 'confetti-bit';
+    const size = 7 + Math.random() * 5;
+    const dx = (Math.random() - 0.5) * 340;
+    const up = -(70 + Math.random() * 110);
+    const dy = 90 + Math.random() * 160;
+    const rot = (Math.random() - 0.5) * 720;
+    b.style.cssText = `left:${cx - size / 2}px; top:${cy - size / 2}px; width:${size}px; height:${size}px;`
+      + `background:${CONFETTI_COLORS[i % CONFETTI_COLORS.length]};`
+      + `--dx:${dx.toFixed(0)}px; --up:${up.toFixed(0)}px; --dy:${dy.toFixed(0)}px;`
+      + `--rot:${rot.toFixed(0)}deg; --dur:${(1 + Math.random() * 0.5).toFixed(2)}s;`;
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 1700);
+  }
+}
+
+// ---- 小型提示气泡（复制确认等），锚定点击位置 ----
+export function showTip(x, y, text) {
+  const t = document.createElement('span');
+  t.className = 'copy-tip';
+  t.textContent = text;
+  t.style.cssText = `left:${x}px; top:${y - 8}px;`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1200);
 }
 
 // 每页初始化一次的活力动效
