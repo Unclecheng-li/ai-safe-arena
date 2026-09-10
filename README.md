@@ -14,7 +14,7 @@
 
 <br>
 
-[![English](https://img.shields.io/badge/README-English-README_EN.md-informational)](README_EN.md)
+**English version**: [`README_EN.md`](README_EN.md)
 
 **本项目是开源、可复现的中文 AI 模型安全测评榜 + 浏览器在线试测平台。**
 <br>

@@ -13,7 +13,7 @@
 
 <br>
 
-[![Chinese](https://img.shields.io/badge/README-中文-README.md-important)](README.md)
+**中文版**: [`README.md`](README.md)
 
 **An open-source, reproducible Chinese AI model security leaderboard + in-browser BYOK testing platform.**
 <br>
