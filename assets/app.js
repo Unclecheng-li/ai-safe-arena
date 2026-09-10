@@ -23,8 +23,7 @@ function fmtCost(m) {
 }
 
 async function main() {
-  // 仓库名确定后替换为真实地址（GitHub Pages 上 jsDelivr 亦可）
-  document.getElementById('repo-link').href = 'https://github.com/';
+  document.getElementById('repo-link').href = 'https://github.com/Unclecheng-li/ai-safe-arena';
 
   let index;
   try {
