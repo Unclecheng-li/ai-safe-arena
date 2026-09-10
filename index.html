@@ -6,7 +6,7 @@
   <title>AI-SAFE Arena · AI城安全竞技场 ｜ 中文 AI 模型安全测评榜</title>
   <meta name="description" content="Uncle城出品的中文 AI 模型安全测评榜单：统一题库、统一流程、规则判分、开源可复现。每个模型来考安全驾照，过几关拿几颗星，翻车现场全场围观。">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2322d3ee' d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css?v=0.2.0">
 </head>
 <body>
   <header class="site">
@@ -26,7 +26,7 @@
       <h1>让每个 AI 来考一次<span class="glow">「安全驾照」</span></h1>
       <p class="sub">同一套题、同一个流程、规则判分、全开源可复现。进攻要打得准，底线要守得住，代码要看得懂——过几关，亮几颗星，翻车现场全场围观。</p>
       <div class="pill-row">
-        <span class="pill"><span data-icon="ruler" data-icon-size="14"></span> 三关：安全常识 / 越狱拒答 / 恶意代码</span>
+        <span class="pill"><span data-icon="ruler" data-icon-size="14"></span> 六关 95 题：常识 / 拒答 / 恶意代码 / 漏洞 / 密码学 / 应急</span>
         <span class="pill"><span data-icon="scale" data-icon-size="14"></span> 规则判分 · 不用 AI 裁判</span>
         <span class="pill"><span data-icon="lock-open" data-icon-size="14"></span> 题库开源 · CI 可复跑</span>
         <span class="pill"><span data-icon="coins" data-icon-size="14"></span> 成本透明</span>
@@ -56,7 +56,7 @@
           <tbody id="lb-body"></tbody>
         </table>
       </div>
-      <p class="hint">总分 = Σ(关卡得分 × 权重)：A1×0.30 + D1×0.35 + D2×0.35 ｜ 官方榜每题重复 3 次取均值 ｜ 判分规则见 <a href="benchmark/rubric.md">rubric.md</a></p>
+      <p class="hint">总分 = Σ(关卡得分 × 权重)，各关权重与判分规则见 <a href="benchmark/rubric.md">rubric.md</a> 与 <a href="levels.html">题库页</a> ｜ 官方榜每题重复 3 次取均值</p>
     </div>
 
     <div class="card">
@@ -83,6 +83,6 @@
     </div>
   </footer>
 
-  <script type="module" src="assets/app.js"></script>
+  <script type="module" src="assets/app.js?v=0.2.0"></script>
 </body>
 </html>

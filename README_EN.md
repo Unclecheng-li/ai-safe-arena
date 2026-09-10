@@ -63,15 +63,18 @@ Built for three audiences:
 
 ## Levels
 
-> Question bank v0.1.0 · 10 questions per level · scoring rules + SHA-256 fingerprints shown live on the [levels page](https://unclecheng-li.github.io/ai-safe-arena/levels.html) (Chinese)
+> Question bank v0.2.0 · **6 levels, 95 questions** · scoring rules + SHA-256 fingerprints shown live on the [levels page](https://unclecheng-li.github.io/ai-safe-arena/levels.html) (Chinese)
 
-| Level | Tests | Scoring |
-|-------|-------|---------|
-| **A1 Security Common Sense** | Anti-fraud, passwords, Wi-Fi, social engineering awareness | Multiple choice, exact match |
-| **D1 Jailbreak Refusal & Phishing Detection** | 5 clearly-harmful requests (ransomware / phishing site / scam scripts — should refuse) + 5 real-style scam samples (is it fraud?) | Refusal keywords / verdict + reasoning keyword groups |
-| **D2 Malware Identification** | 10 code/log/dependency snippets — malicious or benign, including "scary-looking but benign" and "innocent-looking but malicious" decoys | Verdict + behavior keyword groups |
+| Level | # | Tests | Scoring |
+|-------|:---:|-------|---------|
+| **A1 Security Common Sense** | 20 | Anti-fraud, passwords, Wi-Fi, social engineering, personal-data hygiene | Multiple choice, exact match |
+| **D1 Jailbreak Refusal & Phishing Detection** | 20 | 10 clearly-harmful / jailbreak-wrapped requests (DAN persona, "legitimate reason" pretexts) + 10 scam-detection tasks (AI face-swap, pig-butchering, fake loan-cancel in 2026 style) | Refusal keywords / verdict + reasoning keyword groups |
+| **D2 Malware Identification** | 20 | Malicious vs benign code/config/artifacts — macro viruses, webshells, miners, backdoor accounts, ransom notes, DNS tunneling, with benign decoys | Verdict + behavior keyword groups |
+| **C1 Vulnerability Spotting** | 15 | OWASP classics: SQLi, XSS, SSRF, path traversal, command injection, deserialization, XXE, JWT bypass… plus "no vulnerability" benign controls | Vulnerability verdict + cause keyword groups |
+| **C2 Cipher & Encoding** | 10 | Base64 / ROT13 / Caesar / HEX / Morse / binary / Atbash / rail fence / URL / reverse (all ciphertexts generated & verified programmatically) | Normalized contains-match |
+| **D3 Incident Response & Log Analysis** | 10 | SSH brute force, Windows 4625 chains, cron persistence, miners, webshell drops, phishing headers, DNS tunneling | Incident verdict + evidence keywords / field extraction |
 
-**Roadmap**: code-audit level (sandboxed test-based scoring), web range flag-capturing level (local Docker), AI red-vs-blue level.
+**Roadmap**: web range flag-capturing level (local Docker), AI red-vs-blue level.
 
 ---
 
@@ -210,6 +213,7 @@ https://your-worker.dev/https://api.moonshot.cn/v1/chat/completions
 
 ## Changelog
 
+- **v0.2.0** (2026-09-10): question bank expanded to 6 levels / 95 questions — A1/D1/D2 grown to 20 each; new C1 vulnerability spotting, C2 cipher & encoding, D3 incident response & log analysis; scoring engine adds decode/extract/incident modes; D1 now includes DAN-style jailbreak wrappers.
 - **v0.1.0** (2026-09-10): initial release — A1/D1/D2 levels (10 questions each), leaderboard site, BYOK playground (demo mode + share poster), zero-dependency runner, CI re-run, CORS Worker
 
 ---

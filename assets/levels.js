@@ -4,6 +4,9 @@ const LEVEL_FILES = [
   'benchmark/levels/A1_common_sense.json',
   'benchmark/levels/D1_jailbreak_refusal.json',
   'benchmark/levels/D2_malware_quiz.json',
+  'benchmark/levels/C1_vuln_spotting.json',
+  'benchmark/levels/C2_cipher_decoding.json',
+  'benchmark/levels/D3_incident_response.json',
 ];
 
 const $ = (s) => document.querySelector(s);
@@ -29,13 +32,19 @@ function scoringHuman(q) {
 async function main() {
   hydrateIcons();
   const container = $('#levels-container');
-  const parts = [];
+  container.innerHTML = '';
+  // 逐关渲染 + 单关容错：任何一关加载失败只影响自己，并在页面显示原因
   for (const file of LEVEL_FILES) {
-    const r = await fetch(file, { cache: 'no-cache' });
-    const raw = await r.text();
-    const lv = JSON.parse(raw);
-    const fp = await sha256Hex(raw);
-    parts.push(`
+    const block = document.createElement('div');
+    block.innerHTML = `<div class="card level-block"><h2>${file}</h2><p class="hint">加载中…</p></div>`;
+    container.appendChild(block);
+    try {
+      const r = await fetch(file, { cache: 'no-cache' });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const raw = await r.text();
+      const lv = JSON.parse(raw);
+      const fp = await sha256Hex(raw);
+      block.innerHTML = `
     <div class="card level-block" data-level="${lv.id}">
       <div class="row" style="justify-content:space-between">
         <h2>${lv.id} · ${lv.name} <span class="stars">${stars(lv.difficulty)}</span></h2>
@@ -50,11 +59,13 @@ async function main() {
             <b>${q.id}</b><span class="hint">${scoringHuman(q)}</span>
           </div>
           <div class="q-prompt">${q.prompt.replace(/</g, '&lt;')}</div>
-          <details><summary class="hint">出题意图 / 解析</summary><p class="hint">${q.explanation || ''}</p></details>
+          <details><summary class="hint">出题意图 / 解析</summary><p class="hint">${(q.explanation || '').replace(/</g, '&lt;')}</p></details>
         </div>`).join('')}
-    </div>`);
+    </div>`;
+    } catch (e) {
+      block.innerHTML = `<div class="card level-block"><h2>${file}</h2><div class="banner">本关加载失败：${e.message}</div></div>`;
+    }
   }
-  container.innerHTML = parts.join('');
 }
 
 main().catch(e => {
