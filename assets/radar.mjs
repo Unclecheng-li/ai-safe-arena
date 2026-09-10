@@ -36,7 +36,21 @@ export function radarSVG(values, labels, opts = {}) {
     const [x, y] = pt(i, Math.max(0.02, Math.min(1, v / max)));
     dots += `<circle class="rd" style="animation-delay:${0.35 + i * 0.06}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${accent}" stroke="${ink}" stroke-width="1.6"/>`;
   });
-  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+
+  // 估算标签像素宽度（CJK≈1em、拉丁/数字≈0.62em、含空格），据此横向加宽 viewBox，防止左右标签被裁切
+  const fontSize = 11;
+  const estTextW = (s) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 0x2e7f ? fontSize : fontSize * 0.62), 0) + 4;
+  let mx = 0;
+  labels.forEach((l, i) => {
+    const tw = estTextW(`${l} ${Math.round(values[i])}`);
+    const [lx] = pt(i, 1.24);
+    if (lx < cx - 12) mx = Math.max(mx, tw - lx);                    // 左侧锚点 end：向左伸出
+    else if (lx > cx + 12) mx = Math.max(mx, lx + tw - size);        // 右侧锚点 start：向右伸出
+    else mx = Math.max(mx, tw / 2 - Math.min(lx, size - lx));        // 上下锚点 middle：半宽伸出
+  });
+  mx = Math.max(0, Math.ceil(mx));
+
+  return `<svg viewBox="${-mx} 0 ${size + 2 * mx} ${size}" width="${size + 2 * mx}" height="${size}" style="max-width:100%;height:auto" xmlns="http://www.w3.org/2000/svg">
     ${grid}${axis}
     <polygon class="rp" points="${poly}" fill="${accent}" fill-opacity="0.38" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>
     ${dots}
