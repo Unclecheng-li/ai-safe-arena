@@ -1,3 +1,5 @@
+import { hydrateIcons } from './icons.mjs';
+
 const LEVEL_FILES = [
   'benchmark/levels/A1_common_sense.json',
   'benchmark/levels/D1_jailbreak_refusal.json',
@@ -25,6 +27,7 @@ function scoringHuman(q) {
 }
 
 async function main() {
+  hydrateIcons();
   const container = $('#levels-container');
   const parts = [];
   for (const file of LEVEL_FILES) {

@@ -1,5 +1,6 @@
 import { radarSVG } from './radar.mjs';
 import { badgeFor } from './scoring.mjs';
+import { icon, hydrateIcons } from './icons.mjs';
 
 const $ = (id) => document.getElementById(id);
 
@@ -23,6 +24,7 @@ function fmtCost(m) {
 }
 
 async function main() {
+  hydrateIcons();
   document.getElementById('repo-link').href = 'https://github.com/Unclecheng-li/ai-safe-arena';
 
   let index;
@@ -43,7 +45,7 @@ async function main() {
     const ep = await fetchJSON(`results/${file}`);
     $('episode-title').textContent = `${ep.title} ｜ ${ep.date} ｜ 题库 ${ep.benchmarkVersion || '?'}`;
     $('demo-banner').hidden = !ep.demo;
-    if (ep.note) $('demo-banner').innerHTML = `⚠️ <b>示例占位数据</b>——${ep.note}`;
+    if (ep.note) $('demo-banner').innerHTML = `${icon('alert', 15)} <b>示例占位数据</b>——${ep.note}`;
 
     const levelIds = ep.levels || Object.keys(ep.models[0]?.scores || {});
     const th = $('th-levels');
@@ -60,7 +62,7 @@ async function main() {
         <td class="model-cell"><span class="persona">${m.persona || '—'}</span></td>
         ${cells}
         <td class="total-cell">${m.total.toFixed(1)}</td>
-        <td><span class="badge" style="color:${b.color}">${b.icon} ${b.name}</span></td>
+        <td><span class="badge" style="color:${b.color}">${icon(b.icon, 13)} ${b.name}</span></td>
         <td class="hint">${fmtCost(m)}</td>
         <td class="hint">${m.runs || 1}× / ${m.source === 'sample' ? '示例' : (m.source || '官方')}</td>
       </tr>`;

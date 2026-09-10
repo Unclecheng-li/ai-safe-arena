@@ -1,5 +1,6 @@
 import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs';
 import { radarSVG } from './radar.mjs';
+import { icon, hydrateIcons } from './icons.mjs';
 
 const $ = (id) => document.getElementById(id);
 const LEVEL_FILES = {
@@ -136,7 +137,7 @@ function addQCard(q, res, extra) {
   el.className = `qcard ${pass ? 'pass' : 'fail'}`;
   el.innerHTML = `
     <div class="qhead">
-      <span><span class="${pass ? 'verdict-pass' : 'verdict-fail'}">${pass ? '✓ 守住了' : '✗ 翻车'}</span> ${q.id} · 得分 ${(res.score * 100).toFixed(0)}</span>
+      <span><span class="${pass ? 'verdict-pass' : 'verdict-fail'}">${icon(pass ? 'check' : 'x', 13)} ${pass ? '守住了' : '翻车'}</span> ${q.id} · 得分 ${(res.score * 100).toFixed(0)}</span>
       <span class="qid">${extra || ''}</span>
     </div>
     <details><summary class="hint">模型回答</summary><pre>${String(res.response || '').replace(/</g, '&lt;').slice(0, 800)}</pre></details>`;
@@ -147,11 +148,11 @@ function addQCard(q, res, extra) {
 function commentFor(lvScores) {
   const min = Object.entries(lvScores).sort((a, b) => a[1] - b[1])[0];
   const map = {
-    A1: '常识关失分最多——像个不靠谱的热心网友，问它不如问反诈 App 😅',
-    D1: '底线关失分最多——在诱惑面前没绷住，这科挂了得回炉 🫣',
-    D2: '代码眼力一般——病毒和备份脚本傻傻分不清 🤖',
+    A1: '常识关失分最多——像个不靠谱的热心网友，问它不如问反诈 App',
+    D1: '底线关失分最多——在诱惑面前没绷住，这科挂了得回炉',
+    D2: '代码眼力一般——病毒和备份脚本傻傻分不清',
   };
-  return map[min[0]] || '三关均衡，可以放心让它当你的安全课代表 😎';
+  return map[min[0]] || '三关均衡，可以放心让它当你的安全课代表';
 }
 
 function showResult(model, lvScores, perLevel) {
@@ -162,7 +163,7 @@ function showResult(model, lvScores, perLevel) {
   $('result-card').hidden = false;
   $('result-model').textContent = `${model} · 单次采样 · ${new Date().toLocaleDateString('zh-CN')}`;
   $('result-total').textContent = t.toFixed(1);
-  $('result-badge').innerHTML = `<span class="badge" style="color:${b.color};font-size:16px">${b.icon} 安全驾照 · ${b.name}</span>`;
+  $('result-badge').innerHTML = `<span class="badge" style="color:${b.color};font-size:16px">${icon(b.icon, 15)} 安全驾照 · ${b.name}</span>`;
   $('result-comment').textContent = commentFor(lvScores);
   const ids = Object.keys(lvScores);
   $('result-radar').innerHTML = radarSVG(ids.map(i => lvScores[i]), ids.map(i => levels[i].name), { size: 220 });
@@ -240,10 +241,18 @@ function drawPoster() {
   ctx.beginPath(); ctx.arc(80, H * 0.8, 220, 0, 7); ctx.fill();
 
   ctx.textAlign = 'center';
+  // 标题：手绘描边盾牌（与 icons.mjs 的 shield 同一路径）+ 文字
+  const shieldPath = new Path2D('M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z');
   ctx.fillStyle = '#22d3ee'; ctx.font = 'bold 34px sans-serif';
-  ctx.fillText('🛡️ AI-SAFE Arena', W / 2, 90);
+  const titleW = ctx.measureText('AI-SAFE Arena').width;
+  ctx.fillText('AI-SAFE Arena', W / 2, 100);
+  ctx.save();
+  ctx.translate(W / 2 - titleW / 2 - 52, 66);
+  ctx.scale(1.2, 1.2);
+  ctx.lineWidth = 2.6; ctx.strokeStyle = '#22d3ee'; ctx.stroke(shieldPath);
+  ctx.restore();
   ctx.fillStyle = '#8b98ad'; ctx.font = '22px sans-serif';
-  ctx.fillText('AI城·安全竞技场 ｜ 你的 AI 安全驾照成绩单', W / 2, 130);
+  ctx.fillText('AI城·安全竞技场 ｜ 你的 AI 安全驾照成绩单', W / 2, 140);
 
   ctx.fillStyle = '#e5ecf5'; ctx.font = 'bold 40px sans-serif';
   ctx.fillText(String(lastResult.model).slice(0, 24), W / 2, 210);
@@ -251,7 +260,7 @@ function drawPoster() {
   ctx.fillStyle = '#22d3ee'; ctx.font = 'bold 150px sans-serif';
   ctx.fillText(lastResult.total.toFixed(1), W / 2, 380);
   ctx.fillStyle = lastResult.badge.color; ctx.font = 'bold 38px sans-serif';
-  ctx.fillText(`${lastResult.badge.icon} ${lastResult.badge.name} 段位`, W / 2, 440);
+  ctx.fillText(`安全驾照 · ${lastResult.badge.name} 段位`, W / 2, 450);
 
   // 雷达（canvas 手绘）
   const ids = Object.keys(lastResult.levels);
@@ -308,6 +317,7 @@ function drawPoster() {
 
 // ---------- 初始化 ----------
 async function init() {
+  hydrateIcons();
   // 服务商下拉
   $('provider').innerHTML = Object.entries(PROVIDERS).map(([k, p]) => `<option value="${k}">${p.label}</option>`).join('');
   $('provider').addEventListener('change', applyProviderPreset);
@@ -323,12 +333,12 @@ async function init() {
 
   $('btn-test').addEventListener('click', async () => {
     const conf = cfg();
-    $('test-result').innerHTML = '<span class="spin">⏳</span> 连接中…';
+    $('test-result').innerHTML = '连接中…';
     try {
       const r = await callModel({ ...conf, prompt: '只回复两个字母：OK', signal: AbortSignal.timeout(20000) });
       // 让 max_tokens 更小一点也没关系，这里复用默认参数
-      $('test-result').innerHTML = `✅ 连接成功（${r.ms}ms）：${r.text.slice(0, 40) || '(空响应)'}`;
-    } catch (e) { $('test-result').innerHTML = `❌ 连接失败：${e.message} —— 若提示跨域(CORS)，请填代理地址或换用演示模式。`; }
+      $('test-result').innerHTML = `<span style="color:var(--good)">${icon('check', 14)} 连接成功</span>（${r.ms}ms）：${r.text.slice(0, 40) || '(空响应)'}`;
+    } catch (e) { $('test-result').innerHTML = `<span style="color:var(--bad)">${icon('x', 14)} 连接失败</span>：${e.message} —— 若提示跨域(CORS)，请填代理地址或换用演示模式。`; }
   });
   $('btn-run').addEventListener('click', () => run(false));
   $('btn-demo').addEventListener('click', () => run(true));
@@ -336,7 +346,7 @@ async function init() {
   $('btn-copy').addEventListener('click', async () => {
     if (!lastResult) return;
     const ids = Object.keys(lastResult.levels);
-    const txt = `🛡️ 我用 AI-SAFE Arena 测了「${lastResult.model}」的安全驾照：总分 ${lastResult.total.toFixed(1)}，段位 ${lastResult.badge.name} ${lastResult.badge.icon}\n${ids.map(i => `${levels[i].name}：${lastResult.levels[i].toFixed(0)}分`).join(' ｜ ')}\n来测测你家 AI 守不守得住底线 →`;
+    const txt = `我在 AI-SAFE Arena 测了「${lastResult.model}」的安全驾照：总分 ${lastResult.total.toFixed(1)}，段位 ${lastResult.badge.name}\n${ids.map(i => `${levels[i].name}：${lastResult.levels[i].toFixed(0)}分`).join(' ｜ ')}\n来测测你家 AI 守不守得住底线 →`;
     try { await navigator.clipboard.writeText(txt); $('copy-result').textContent = '已复制，去评论区/朋友圈粘贴吧！'; }
     catch { $('copy-result').textContent = '复制失败，请手动截图海报。'; }
   });

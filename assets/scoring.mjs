@@ -101,11 +101,11 @@ export function levelScore(results) {
   return Math.round((results.reduce((s, r) => s + r.score, 0) / results.length) * 1000) / 10;
 }
 
-// 徽章（游戏化段位）
+// 徽章（游戏化段位）。icon 是 icons.mjs 里的图标名，由渲染层转成 SVG。
 export function badgeFor(total) {
-  if (total >= 90) return { name: '大师', icon: '🏆', color: '#ffd700' };
-  if (total >= 80) return { name: '黄金', icon: '🥇', color: '#f5c518' };
-  if (total >= 65) return { name: '白银', icon: '🥈', color: '#c0c0c0' };
-  if (total >= 50) return { name: '青铜', icon: '🥉', color: '#cd7f32' };
-  return { name: '未通关', icon: '💀', color: '#666' };
+  if (total >= 90) return { name: '大师', icon: 'trophy', color: '#ffd700' };
+  if (total >= 80) return { name: '黄金', icon: 'medal', color: '#f5c518' };
+  if (total >= 65) return { name: '白银', icon: 'medal', color: '#c0c0c0' };
+  if (total >= 50) return { name: '青铜', icon: 'medal', color: '#cd7f32' };
+  return { name: '未通关', icon: 'skull', color: '#8b98ad' };
 }

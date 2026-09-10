@@ -30,6 +30,10 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 code, pre, .mono { font-family: "JetBrains Mono", Consolas, "Courier New", monospace; }
 
+/* 平面线性图标（icons.mjs 注入） */
+svg.icon { vertical-align: -3px; flex: none; }
+p svg.icon, li svg.icon, .hint svg.icon { margin-right: 5px; }
+
 .container { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
 
 /* 顶部导航 */

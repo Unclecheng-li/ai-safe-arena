@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI-SAFE Arena · AI城安全竞技场 ｜ 中文 AI 模型安全测评榜</title>
-  <meta name="description" content="Uncle城出品的中文 AI 模型安全测评榜单：统一题库、统一流程、规则判分、开源可复现。每个模型来考安全驾照，过几关亮几颗星。">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <meta name="description" content="Uncle城出品的中文 AI 模型安全测评榜单：统一题库、统一流程、规则判分、开源可复现。每个模型来考安全驾照，过几关拿几颗星，翻车现场全场围观。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2322d3ee' d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
   <header class="site">
     <div class="container inner">
-      <div class="logo"><span class="shield">🛡️</span>AI-SAFE&nbsp;Arena <small>｜ AI城·安全竞技场</small></div>
+      <div class="logo"><span class="shield" data-icon="shield"></span>AI-SAFE&nbsp;Arena <small>｜ AI城·安全竞技场</small></div>
       <nav class="main">
         <a href="index.html" class="active">榜单</a>
         <a href="levels.html">题库</a>
-        <a href="play.html">🎮 试测</a>
-        <a href="https://github.com/Unclecheng-li/ai-safe-arena" target="_blank" rel="noopener" id="repo-link">GitHub</a>
+        <a href="play.html"><span data-icon="gamepad" data-icon-size="14"></span> 试测</a>
+        <a href="https://github.com/Unclecheng-li/ai-safe-arena" target="_blank" rel="noopener" id="repo-link"><span data-icon="github" data-icon-size="14"></span> GitHub</a>
       </nav>
     </div>
   </header>
@@ -26,15 +26,15 @@
       <h1>让每个 AI 来考一次<span class="glow">「安全驾照」</span></h1>
       <p class="sub">同一套题、同一个流程、规则判分、全开源可复现。进攻要打得准，底线要守得住，代码要看得懂——过几关，亮几颗星，翻车现场全场围观。</p>
       <div class="pill-row">
-        <span class="pill">📐 三关：安全常识 / 越狱拒答 / 恶意代码</span>
-        <span class="pill">⚖️ 规则判分 · 不用 AI 裁判</span>
-        <span class="pill">🔓 题库开源 · CI 可复跑</span>
-        <span class="pill">💰 成本透明</span>
+        <span class="pill"><span data-icon="ruler" data-icon-size="14"></span> 三关：安全常识 / 越狱拒答 / 恶意代码</span>
+        <span class="pill"><span data-icon="scale" data-icon-size="14"></span> 规则判分 · 不用 AI 裁判</span>
+        <span class="pill"><span data-icon="lock-open" data-icon-size="14"></span> 题库开源 · CI 可复跑</span>
+        <span class="pill"><span data-icon="coins" data-icon-size="14"></span> 成本透明</span>
       </div>
     </section>
 
     <div class="banner info" id="episode-banner" hidden></div>
-    <div class="banner" id="demo-banner" hidden>⚠️ 当前展示为<b>示例占位数据</b>——正式首期成绩（6 模型 × 3 关 × 3 次）将于 2026-09-15 随首发视频同步公布。</div>
+    <div class="banner" id="demo-banner" hidden></div>
 
     <div class="card">
       <div class="row" style="justify-content:space-between">
@@ -60,13 +60,13 @@
     </div>
 
     <div class="card">
-      <h2>📊 三维安全雷达</h2>
+      <h2><span data-icon="radar" data-icon-size="18"></span> 三维安全雷达</h2>
       <p class="hint">一眼看出谁偏科：常识、底线、代码眼力。</p>
       <div class="radar-wall" id="radar-wall"></div>
     </div>
 
     <div class="card">
-      <h2>🕹️ 你也可以亲手测</h2>
+      <h2><span data-icon="gamepad" data-icon-size="18"></span> 你也可以亲手测</h2>
       <p>用自己的 API Key 在浏览器里跑同款题库的轻量版（Key 只存在你的浏览器本地，不经过我们任何服务器）：</p>
       <p><a href="play.html"><button class="btn">开始试测 →</button></a></p>
       <p class="hint">试测成绩标注为「民间自测」，不计入官方榜单。</p>
@@ -76,7 +76,7 @@
   <footer class="site">
     <div class="container">
       <div class="row">
-        <span>🛡️ AI-SAFE Arena · AI城安全竞技场</span>
+        <span><span data-icon="shield" data-icon-size="14"></span> AI-SAFE Arena · AI城安全竞技场</span>
         <span>题库与判分引擎开源，欢迎 PR 提交新模型结果</span>
       </div>
       <p style="margin:10px 0 0">免责声明：本榜单仅使用公开已知的评测题目，用于科普与模型能力比较，不针对任何厂商；所有攻击性内容仅考察模型拒绝能力，不提供真实攻击指引。</p>
