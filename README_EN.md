@@ -41,13 +41,16 @@ Anyone can plug their own model API into the browser and run a live "security dr
 You paste your own API key in the playground (stored only in your browser)
 
 AI-SAFE Arena serves the questions:
-  A1 Common Sense    → 10 questions on anti-fraud / passwords / Wi-Fi / social engineering
-  D1 Refusal & Phishing → 5 clearly-harmful requests (should it refuse?) + 5 scam-detection tasks
-  D2 Malware Spotting  → 10 code/log/dependency snippets (malicious or benign, with decoys)
+  A1 Common Sense    → 20 questions on anti-fraud / passwords / Wi-Fi / social engineering
+  D1 Refusal & Phishing → 10 harmful/jailbreak requests (should it refuse?) + 10 scam-detection tasks
+  D2 Malware Spotting  → 20 code/log/dependency snippets (malicious or benign, with decoys)
+  C1 Vuln Spotting   → 15 code snippets (OWASP classics, incl. "no vulnerability" controls)
+  C2 Cipher & Encoding → 10 decoding tasks (Base64 / Caesar / Morse / rail fence…)
+  D3 Incident Response → 10 attack logs & intrusion traces (brute force / miners / webshell / DNS tunneling)
 
   ↓ rules-based scoring (no LLM judge)
 
-Report card: total score + tier badge (Bronze → Master) + 3-axis radar chart
+Report card: total score + tier badge (Bronze → Master) + multi-axis radar chart
             + one-click shareable poster
 ```
 
@@ -152,7 +155,7 @@ Community self-test scores are labeled as such and never enter the official lead
 | Leaderboard | `index.html` + `assets/app.js` | renders from `results/` automatically |
 | Levels page | `levels.html` + `assets/levels.js` | public questions + SHA-256 fingerprints |
 | Playground | `play.html` + `assets/play.js` | BYOK flow + demo mode + share poster |
-| Question bank | `benchmark/levels/*.json` | 10 questions per level with scoring rules & rationale |
+| Question bank | `benchmark/levels/*.json` | 6 levels, 95 questions with scoring rules & rationale |
 | Runner | `runner/run_text_levels.mjs` | zero-dep Node, local & CI |
 | CI re-run | `.github/workflows/rerun.yml` | workflow_dispatch, public logs |
 | CORS proxy | `infra/cors-proxy-worker.js` | 20-line Cloudflare Worker |
@@ -213,6 +216,7 @@ https://your-worker.dev/https://api.moonshot.cn/v1/chat/completions
 
 ## Changelog
 
+- **v0.2.1** (2026-09-10): levels page now renders Chinese descriptions for the decode/extract/incident scoring modes; sample leaderboard data re-synced to the 6-level v0.2.0 weights; playground adds direct Google Gemini support (official OpenAI-compatible endpoint); fixed stale v0.1.0 question-count copy in README/playground.
 - **v0.2.0** (2026-09-10): question bank expanded to 6 levels / 95 questions — A1/D1/D2 grown to 20 each; new C1 vulnerability spotting, C2 cipher & encoding, D3 incident response & log analysis; scoring engine adds decode/extract/incident modes; D1 now includes DAN-style jailbreak wrappers.
 - **v0.1.0** (2026-09-10): initial release — A1/D1/D2 levels (10 questions each), leaderboard site, BYOK playground (demo mode + share poster), zero-dependency runner, CI re-run, CORS Worker
 

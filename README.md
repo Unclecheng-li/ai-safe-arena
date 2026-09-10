@@ -41,13 +41,16 @@
 用户在试测页填入自己的 API Key（只存浏览器本地）
 
 AI-SAFE Arena 现场出题：
-  A1 安全常识     → 反诈/密码/WiFi/社工 10 题，选择题精确判分
-  D1 越狱拒答     → 5 题有害请求（该不该拒绝）+ 5 题识骗（是不是诈骗）
-  D2 恶意代码判断 → 10 段代码/日志/依赖（恶意还是良性，含干扰项）
+  A1 安全常识     → 反诈/密码/WiFi/社工 20 题，选择题精确判分
+  D1 越狱拒答     → 10 题有害/越狱请求（该不该拒绝）+ 10 题识骗（是不是诈骗）
+  D2 恶意代码判断 → 20 段代码/日志/依赖（恶意还是良性，含干扰项）
+  C1 代码漏洞识别 → 15 段代码找漏洞（OWASP 常见类，含"无漏洞"对照）
+  C2 密码学与编码 → 10 道解码题（Base64/凯撒/摩斯/栅栏……真动手算）
+  D3 日志研判     → 10 段攻击日志/入侵痕迹（爆破/挖矿/Webshell/DNS 隧道）
 
   ↓ 规则判分（不用 LLM 当裁判）
 
-成绩单：总分 + 段位徽章（青铜→大师）+ 三维雷达图
+成绩单：总分 + 段位徽章（青铜→大师）+ 多维雷达图
        + 一键生成分享海报（晒出你家 AI 的安全驾照成绩单）
 ```
 
@@ -152,7 +155,7 @@ cd ai-safe-arena && python -m http.server 8000
 | 榜单页 | `index.html` + `assets/app.js` | 读 `results/` 自动渲染总榜/雷达/成本列 |
 | 题库页 | `levels.html` + `assets/levels.js` | 公开题目 + SHA-256 指纹 |
 | 试测页 | `play.html` + `assets/play.js` | BYOK 全流程 + 演示模式 + 分享海报 |
-| 题库 | `benchmark/levels/*.json` | 每关 10 题，含判分规则与出题解析 |
+| 题库 | `benchmark/levels/*.json` | 6 关 95 题，含判分规则与出题解析 |
 | 跑分器 | `runner/run_text_levels.mjs` | 零依赖 Node，本地/CI 两用 |
 | CI 复跑 | `.github/workflows/rerun.yml` | workflow_dispatch，日志公开 |
 | 跨域代理 | `infra/cors-proxy-worker.js` | 20 行 Cloudflare Worker |
@@ -213,6 +216,7 @@ https://your-worker.dev/https://api.moonshot.cn/v1/chat/completions
 
 ## 更新日志
 
+- **v0.2.1**（2026-09-10）：题库页补齐 decode / extract / incident 三种判分模式的中文说明；示例榜单数据同步六关 v0.2.0 权重口径；试测页新增 Google Gemini 直连（官方 OpenAI 兼容端点）；修正 README / 试测页残留的 v0.1.0 题数文案。
 - **v0.2.0**（2026-09-10）：题库扩充至 6 关 95 题——A1/D1/D2 各扩到 20 题；新增 C1 代码漏洞识别、C2 密码学与编码、D3 日志研判与应急响应；判分引擎新增 decode/extract/incident 三模式；D1 引入 DAN 越狱式包装测试。
 - **v0.1.0**（2026-09-10）：首发——A1/D1/D2 三关各 10 题、榜单站、BYOK 试测（含演示模式/分享海报）、零依赖 runner、CI 复跑、CORS Worker。
 

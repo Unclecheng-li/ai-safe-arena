@@ -18,6 +18,7 @@ const PROVIDERS = {
   moonshot: { label: 'Kimi（月之暗面，可能需代理）', api: 'openai', baseURL: 'https://api.moonshot.cn/v1', model: 'kimi-latest' },
   openai: { label: 'OpenAI', api: 'openai', baseURL: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
   anthropic: { label: 'Anthropic Claude', api: 'anthropic', baseURL: 'https://api.anthropic.com', model: 'claude-sonnet-4-5' },
+  gemini: { label: 'Google Gemini', api: 'openai', baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' },
   doubao: { label: '豆包（火山方舟，可能需代理）', api: 'openai', baseURL: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-seed-2-1' },
   custom: { label: '自定义（任意 OpenAI 兼容）', api: 'openai', baseURL: '', model: '' },
 };
@@ -215,7 +216,7 @@ function commentFor(lvScores) {
     C2: '解码能力堪忧——Base64 都解不明白，基本功还得练',
     D3: '应急研判失分最多——日志摆在面前也读不出攻击故事',
   };
-  return map[min[0]] || '三关均衡，可以放心让它当你的安全课代表';
+  return map[min[0]] || '各关均衡，可以放心让它当你的安全课代表';
 }
 
 function showResult(model, lvScores, perLevel) {
