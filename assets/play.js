@@ -1,7 +1,7 @@
 import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs';
 import { radarSVG } from './radar.mjs';
 import { icon, hydrateIcons } from './icons.mjs';
-import { observeReveals } from './fx.mjs';
+import { observeReveals, initLively } from './fx.mjs';
 
 const $ = (id) => document.getElementById(id);
 const LEVEL_FILES = {
@@ -458,6 +458,7 @@ function fillMarquee() {
 
 async function init() {
   hydrateIcons();
+  initLively();
   fillMarquee();
   observeReveals();
   // 服务商下拉

@@ -1,5 +1,5 @@
 import { hydrateIcons } from './icons.mjs';
-import { observeReveals } from './fx.mjs';
+import { observeReveals, initLively } from './fx.mjs';
 
 const LEVEL_FILES = [
   'benchmark/levels/A1_common_sense.json',
@@ -42,6 +42,7 @@ function fillMarquee() {
 
 async function main() {
   hydrateIcons();
+  initLively();
   fillMarquee();
   const container = $('#levels-container');
   container.innerHTML = '';

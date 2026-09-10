@@ -1,7 +1,7 @@
 import { radarSVG } from './radar.mjs';
 import { badgeFor } from './scoring.mjs';
 import { icon, hydrateIcons } from './icons.mjs';
-import { observeReveals } from './fx.mjs';
+import { observeReveals, initLively } from './fx.mjs';
 
 const $ = (id) => document.getElementById(id);
 
@@ -97,6 +97,7 @@ function podiumCard(m, rank, offenseIds, defenseIds) {
 
 async function main() {
   hydrateIcons();
+  initLively();
   fillMarquee();
   await loadLevelMeta();
   document.getElementById('repo-link').href = 'https://github.com/Unclecheng-li/ai-safe-arena';

@@ -272,7 +272,7 @@ nav.main a.active { background: var(--ink); color: var(--yellow); }
   transform: rotate(-2deg);
   background: var(--paper-2);
 }
-.stamp.stamp-anim { animation: stampin .4s cubic-bezier(.2, 1.4, .4, 1) backwards; }
+.stamp.stamp-anim, .badge.stamp-anim { animation: stampin .45s cubic-bezier(.2, 1.4, .4, 1) backwards, wiggle 4.5s ease-in-out 1.8s infinite; }
 @keyframes stampin {
   from { opacity: 0; transform: rotate(-14deg) scale(2.2); }
   60%  { opacity: 1; transform: rotate(1deg) scale(.94); }
@@ -502,3 +502,120 @@ footer.site .foot-logo { color: var(--yellow); font-weight: 900; }
 
 /* 期数选择器迷你化 */
 .mini-select { width: auto; padding: 6px 10px; font-size: 13px; }
+
+/* ============================================================
+   活力动效层（v0.3.1）—— 新粗野主义要"闹"起来
+   ============================================================ */
+
+/* 警示带缓慢滚动（像真警示条） */
+.tape { animation: tape-scroll 1.1s linear infinite; }
+@keyframes tape-scroll { to { background-position: 50.9px 0; } }
+
+/* 跑马灯悬停暂停（想看清楚就按住） */
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+/* 英雄区标题逐字弹入（fx.mjs 逐字分包 .ch） */
+.hero h1 .ch { display: inline-block; animation: chpop .5s cubic-bezier(.2, 1.6, .4, 1) backwards; }
+@keyframes chpop { from { opacity: 0; transform: translateY(.45em) rotate(10deg) scale(.5); } }
+
+/* 滚动进度条（吸在导航下缘） */
+#scroll-progress {
+  position: absolute; left: 0; bottom: -3px; height: 6px; width: 0;
+  background: var(--yellow); border-right: 3px solid var(--ink); z-index: 61;
+}
+
+/* 背景漂浮虚线圆（固定、慢转、不挡交互） */
+body::before, body::after {
+  content: ''; position: fixed; z-index: -1; pointer-events: none;
+  border: 3px dashed var(--ink-12); border-radius: 50%;
+}
+body::before { width: 380px; height: 380px; right: -130px; top: 18%; animation: spin-slow 46s linear infinite; }
+body::after { width: 260px; height: 260px; left: -100px; bottom: 8%; animation: spin-slow 34s linear infinite reverse; }
+
+/* 皇冠摇摆 */
+.crown { animation: crown-swing 2.2s ease-in-out infinite; transform-origin: 50% 85%; }
+@keyframes crown-swing { 0%, 100% { transform: rotate(6deg); } 50% { transform: rotate(20deg) translateY(-3px); } }
+
+/* 冠军卡脉冲光环 */
+.podium-card.p1 { animation: p1pulse 2.4s ease-in-out infinite; }
+.podium-card.p1:hover { animation-play-state: paused; }
+@keyframes p1pulse {
+  0%, 100% { box-shadow: 9px 9px 0 var(--ink), 0 0 0 0 rgba(255, 208, 47, .55); }
+  50% { box-shadow: 9px 9px 0 var(--ink), 0 0 0 7px rgba(255, 208, 47, 0); }
+}
+
+/* 领奖台/雷达墙入场交错（配合 .rv 过渡） */
+.podium-card:nth-child(2) { transition-delay: .08s; }
+.podium-card:nth-child(3) { transition-delay: .16s; }
+.radar-wall .radar-card:nth-child(2) { transition-delay: .06s; }
+.radar-wall .radar-card:nth-child(3) { transition-delay: .12s; }
+.radar-wall .radar-card:nth-child(4) { transition-delay: .18s; }
+.radar-wall .radar-card:nth-child(5) { transition-delay: .24s; }
+.radar-wall .radar-card:nth-child(6) { transition-delay: .30s; }
+
+/* 表格行交错滑入 */
+#lb-body tr, #cost-body tr { animation: rowin .35s ease backwards; }
+#lb-body tr:nth-child(2), #cost-body tr:nth-child(2) { animation-delay: .05s; }
+#lb-body tr:nth-child(3), #cost-body tr:nth-child(3) { animation-delay: .10s; }
+#lb-body tr:nth-child(4), #cost-body tr:nth-child(4) { animation-delay: .15s; }
+#lb-body tr:nth-child(5), #cost-body tr:nth-child(5) { animation-delay: .20s; }
+#lb-body tr:nth-child(6), #cost-body tr:nth-child(6) { animation-delay: .25s; }
+#lb-body tr:nth-child(7), #cost-body tr:nth-child(7) { animation-delay: .30s; }
+#lb-body tr:nth-child(8), #cost-body tr:nth-child(8) { animation-delay: .35s; }
+@keyframes rowin { from { opacity: 0; transform: translateX(-16px); } }
+
+/* 雷达图：多边形从中心生长 + 顶点逐个弹出（radar.mjs 注入 class） */
+.rp { transform-box: fill-box; transform-origin: center; animation: radar-grow .55s cubic-bezier(.2, 1.5, .4, 1) backwards; }
+@keyframes radar-grow { from { transform: scale(0); } }
+.rd { transform-box: fill-box; transform-origin: center; animation: dotpop .3s cubic-bezier(.2, 1.6, .4, 1) backwards; }
+@keyframes dotpop { from { transform: scale(0); } }
+
+/* 段位印章周期性抖一抖 */
+.badge { animation: wiggle 4.5s ease-in-out 1.4s infinite; }
+@keyframes wiggle {
+  0%, 88%, 100% { transform: rotate(-2deg); }
+  92% { transform: rotate(2deg) scale(1.06); }
+  96% { transform: rotate(-5deg); }
+}
+
+/* 分数色块 hover 弹跳 */
+.score-mini { transition: transform .12s; cursor: default; }
+.score-mini:hover { transform: translateY(-3px) rotate(-3deg); }
+
+/* 按钮 hover 时图标跟着抖 */
+button.btn:hover svg.icon { animation: wiggle .5s ease-in-out; }
+
+/* CTA 黑卡内按钮：阴影换纸色 + 呼吸 */
+.cta-card .btn { box-shadow: 4px 4px 0 rgba(255, 251, 239, .9); }
+.cta-card .btn:hover { box-shadow: 6px 6px 0 rgba(255, 251, 239, .9); }
+.cta-card .btn:active { box-shadow: 0 0 0 rgba(255, 251, 239, .9); }
+.cta-card .btn.big { animation: breathe 2.2s ease-in-out infinite; }
+@keyframes breathe {
+  0%, 100% { transform: none; box-shadow: 4px 4px 0 rgba(255, 251, 239, .9); }
+  50% { transform: translate(-2px, -2px) scale(1.03); box-shadow: 7px 7px 0 rgba(255, 251, 239, .9); }
+}
+
+/* 点击按钮时的墨点/黄星爆裂（fx.mjs 注入 .burst-bit） */
+.burst-bit {
+  position: fixed; z-index: 999; width: 9px; height: 9px;
+  background: var(--ink); pointer-events: none;
+  animation: burst-fly .6s cubic-bezier(.1, .8, .3, 1) forwards;
+}
+.burst-bit.yl { background: var(--yellow); border: 2px solid var(--ink); }
+@keyframes burst-fly { to { transform: translate(var(--dx), var(--dy)) rotate(220deg) scale(.3); opacity: 0; } }
+
+/* 题库题目 hover 上黄色 */
+.q-item { transition: background .15s; border-radius: 4px; padding-left: 8px; padding-right: 8px; margin: 0 -8px; }
+.q-item:hover { background: rgba(255, 208, 47, .22); }
+
+/* 关卡卡头 ID 黑块 hover 歪头 */
+.lv-id { transition: transform .15s; }
+.lv-head:hover .lv-id { transform: rotate(3deg) scale(1.06); }
+
+/* 全部动画在 reduced-motion 下一键关闭 */
+@media (prefers-reduced-motion: reduce) {
+  .tape, .crown, .podium-card.p1, .badge, .cta-card .btn.big,
+  .hero h1 .ch, .rp, .rd, #lb-body tr, #cost-body tr,
+  body::before, body::after, .burst-bit { animation: none !important; }
+  button.btn:hover svg.icon { animation: none !important; }
+}

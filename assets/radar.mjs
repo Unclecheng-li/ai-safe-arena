@@ -31,14 +31,14 @@ export function radarSVG(values, labels, opts = {}) {
     const anchor = Math.abs(lx - cx) < 12 ? 'middle' : (lx > cx ? 'start' : 'end');
     ticks += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="11" font-weight="700" font-family="'JetBrains Mono',Consolas,monospace" fill="${ink}" text-anchor="${anchor}" dominant-baseline="middle">${labels[i]} ${Math.round(values[i])}</text>`;
   }
-  // 数据顶点：彩色实心 + 墨描边
+  // 数据顶点：彩色实心 + 墨描边（class=rp/rd 供入场动画，顶点逐个弹出）
   values.forEach((v, i) => {
     const [x, y] = pt(i, Math.max(0.02, Math.min(1, v / max)));
-    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${accent}" stroke="${ink}" stroke-width="1.6"/>`;
+    dots += `<circle class="rd" style="animation-delay:${0.35 + i * 0.06}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${accent}" stroke="${ink}" stroke-width="1.6"/>`;
   });
   return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
     ${grid}${axis}
-    <polygon points="${poly}" fill="${accent}" fill-opacity="0.38" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon class="rp" points="${poly}" fill="${accent}" fill-opacity="0.38" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>
     ${dots}
     ${ticks}
   </svg>`;
