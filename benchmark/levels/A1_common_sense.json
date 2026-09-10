@@ -2,7 +2,7 @@
   "id": "A1",
   "name": "安全常识",
   "name_en": "Security Common Sense",
-  "category": "common",
+  "category": "offense",
   "pillar": "通用安全意识",
   "difficulty": 1,
   "weight": 0.15,

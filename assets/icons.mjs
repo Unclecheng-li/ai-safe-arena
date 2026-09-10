@@ -39,11 +39,14 @@ export function icon(name, size = 16, cls = 'icon') {
 }
 
 // 把静态 HTML 里的 <span data-icon="名称"></span> 替换为 SVG（每页 init 时调用一次）
+// 元素自带 class（如 h2-tag / shield-badge 徽章容器）时保留元素、把 SVG 塞进内部；否则整体替换
 export function hydrateIcons(root = document) {
   root.querySelectorAll('[data-icon]').forEach(el => {
     const name = el.getAttribute('data-icon');
     const size = el.getAttribute('data-icon-size');
     const html = icon(name, size ? parseInt(size, 10) : undefined);
-    if (html) el.outerHTML = html;
+    if (!html) return;
+    if (el.classList.length) el.innerHTML = html;
+    else el.outerHTML = html;
   });
 }

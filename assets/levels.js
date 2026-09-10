@@ -1,4 +1,5 @@
 import { hydrateIcons } from './icons.mjs';
+import { observeReveals } from './fx.mjs';
 
 const LEVEL_FILES = [
   'benchmark/levels/A1_common_sense.json',
@@ -32,14 +33,25 @@ function scoringHuman(q) {
   }
 }
 
+// 跑马灯内容（与榜单页呼应，题库专属文案）
+function fillMarquee() {
+  const items = ['每一道题都摊在阳光下', '判分规则 = 关键词与客观规则', 'SHA-256 指纹 · 换题留痕', '欢迎 PR 出新题', '活题库 · 定期换血防背题'];
+  const html = items.map(t => `<span>${t}</span><b>◆</b>`).join('');
+  $('marquee-track').innerHTML = html + html;
+}
+
 async function main() {
   hydrateIcons();
+  fillMarquee();
   const container = $('#levels-container');
   container.innerHTML = '';
   // 逐关渲染 + 单关容错：任何一关加载失败只影响自己，并在页面显示原因
+  let idx = 0;
   for (const file of LEVEL_FILES) {
+    const colorCls = `lv-c${idx % 6}`;
+    idx++;
     const block = document.createElement('div');
-    block.innerHTML = `<div class="card level-block"><h2>${file}</h2><p class="hint">加载中…</p></div>`;
+    block.innerHTML = `<div class="card level-block rv"><h2>${file}</h2><p class="hint">加载中…</p></div>`;
     container.appendChild(block);
     try {
       const r = await fetch(file, { cache: 'no-cache' });
@@ -48,27 +60,31 @@ async function main() {
       const lv = JSON.parse(raw);
       const fp = await sha256Hex(raw);
       block.innerHTML = `
-    <div class="card level-block" data-level="${lv.id}">
-      <div class="row" style="justify-content:space-between">
-        <h2>${lv.id} · ${lv.name} <span class="stars">${stars(lv.difficulty)}</span></h2>
-        <span class="pill">权重 ${(lv.weight * 100).toFixed(0)}%</span>
+    <div class="card level-block rv ${colorCls}" data-level="${lv.id}">
+      <div class="lv-head">
+        <div class="row">
+          <h2><span class="lv-id">${lv.id}</span> ${lv.name} <span class="stars">${stars(lv.difficulty)}</span></h2>
+          <span class="w-pill">权重 ${(lv.weight * 100).toFixed(0)}%</span>
+        </div>
       </div>
       <p class="hint">${lv.description}</p>
-      <p class="hint">版本 <b>${lv.version}</b> ｜ ${lv.questions.length} 题 ｜ 类别：${lv.category}</p>
+      <p class="hint">版本 <b>${lv.version}</b> ｜ ${lv.questions.length} 题 ｜ 类别：${lv.category === 'offense' ? '进攻' : '防御'}</p>
       <p class="hint">题库指纹（SHA-256）：<span class="fingerprint">${fp}</span></p>
       ${lv.questions.map(q => `
         <div class="q-item">
           <div class="row" style="justify-content:space-between">
-            <b>${q.id}</b><span class="hint">${scoringHuman(q)}</span>
+            <span class="qid-tag">${q.id}</span><span class="scoring-tag">${scoringHuman(q)}</span>
           </div>
           <div class="q-prompt">${q.prompt.replace(/</g, '&lt;')}</div>
-          <details><summary class="hint">出题意图 / 解析</summary><p class="hint">${(q.explanation || '').replace(/</g, '&lt;')}</p></details>
+          <details><summary>出题意图 / 解析</summary><p class="hint">${(q.explanation || '').replace(/</g, '&lt;')}</p></details>
         </div>`).join('')}
     </div>`;
+      observeReveals(block);
     } catch (e) {
-      block.innerHTML = `<div class="card level-block"><h2>${file}</h2><div class="banner">本关加载失败：${e.message}</div></div>`;
+      block.innerHTML = `<div class="card level-block rv"><h2>${file}</h2><div class="banner">本关加载失败：${e.message}</div></div>`;
     }
   }
+  observeReveals();
 }
 
 main().catch(e => {

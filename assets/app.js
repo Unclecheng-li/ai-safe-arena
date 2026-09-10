@@ -1,6 +1,7 @@
 import { radarSVG } from './radar.mjs';
 import { badgeFor } from './scoring.mjs';
 import { icon, hydrateIcons } from './icons.mjs';
+import { observeReveals } from './fx.mjs';
 
 const $ = (id) => document.getElementById(id);
 
@@ -37,6 +38,8 @@ const FALLBACK_META = {
   D3: { id: 'D3', name: '日志研判与应急响应', category: 'defense', weight: 0.15 },
 };
 const SHORT = { A1: '常识', D1: '拒答/识骗', D2: '恶意代码', C1: '漏洞', C2: '密码学', D3: '应急' };
+// 雷达墙 / 装饰循环色板
+const PALETTE = ['#FF5A5F', '#4D7CFE', '#06D6A0', '#FF9F1C', '#FF8FAB', '#B388FF'];
 const LEVEL_META = {};
 
 async function loadLevelMeta() {
@@ -65,8 +68,36 @@ function costCNY(m) {
   return m.currency === 'USD' ? m.cost * 7.2 : m.cost;
 }
 
+// 跑马灯内容（重复两遍实现无缝滚动）
+function fillMarquee() {
+  const items = ['翻车现场 · 全程围观', '规则判分 · 不用 AI 裁判', '题库全开源 · CI 可复跑',
+    '六关 95 题 · 一题不放过', '进攻要打得准 · 底线要守得住', '成本透明 · 谁便宜谁上榜'];
+  const html = items.map(t => `<span>${t}</span><b>◆</b>`).join('');
+  $('marquee-track').innerHTML = html + html;
+}
+
+function podiumCard(m, rank, offenseIds, defenseIds) {
+  const b = badgeFor(m.total);
+  const off = boardScore(m, offenseIds), def = boardScore(m, defenseIds);
+  return `<div class="podium-card rv p${rank}">
+    ${rank === 1 ? '<svg class="crown" width="42" height="42" viewBox="0 0 24 24" fill="#FFD02F" stroke="#191512" stroke-width="1.6" stroke-linejoin="round"><path d="M2.5 17h19l-1.4-8.6L14.6 13 12 5.8 9.4 13 3.9 8.4z"/><rect x="2.5" y="17.6" width="19" height="2.6" rx="1"/></svg>' : ''}
+    <div class="pc-top"><span>RANK</span><span class="pc-rank">${rank}</span></div>
+    <div class="pc-body">
+      <div class="pc-name">${m.name}</div>
+      <div class="pc-meta">${m.vendor || ''} · ${m.version || ''}</div>
+      <div class="pc-persona">${m.persona || ''}</div>
+      <div class="pc-total rv" data-count="${m.total}">0</div>
+      <div class="pc-boards">
+        <span>进攻 ${off ?? '—'}</span><span>防御 ${def ?? '—'}</span>
+      </div>
+      <div class="pc-badge"><span class="badge" style="background:${b.color}">${icon(b.icon, 13)} 安全驾照 · ${b.name}</span></div>
+    </div>
+  </div>`;
+}
+
 async function main() {
   hydrateIcons();
+  fillMarquee();
   await loadLevelMeta();
   document.getElementById('repo-link').href = 'https://github.com/Unclecheng-li/ai-safe-arena';
 
@@ -98,28 +129,38 @@ async function main() {
     th.textContent = '关卡得分';
 
     const models = (ep.models || []).slice().sort((a, b) => b.total - a.total);
-    $('lb-body').innerHTML = models.map((m, i) => {
+
+    // 领奖台：前三名（视觉顺序 2-1-3，名次卡片自带 p1/p2/p3 配色）
+    const top3 = models.slice(0, 3);
+    const order = top3.length === 3 ? [1, 0, 2] : top3.map((_, i) => i);
+    $('podium').innerHTML = order.map(i => podiumCard(top3[i], i + 1, offenseIds, defenseIds)).join('');
+
+    // 表格：第 4 名起（不足 4 个模型时整表隐藏）
+    const rest = models.slice(3);
+    $('rest-wrap').style.display = rest.length ? '' : 'none';
+    $('lb-body').innerHTML = rest.map((m, i) => {
+      const rank = i + 4;
       const b = badgeFor(m.total);
       const cells = levelIds.map(l => `<td><span class="score-mini ${scoreClass(m.scores[l] ?? 0)}">${m.scores[l] ?? '—'}</span></td>`).join('');
       const boardCells = [boardScore(m, offenseIds), boardScore(m, defenseIds)].map(v =>
         `<td><span class="score-mini ${v == null ? '' : scoreClass(v)}">${v ?? '—'}</span></td>`).join('');
       return `<tr>
-        <td class="rank ${i < 3 ? 'r' + (i + 1) : ''}">${i + 1}</td>
+        <td class="rank"><span class="rk">${rank}</span></td>
         <td class="model-cell"><div class="name">${m.name}</div><div class="meta">${m.vendor || ''} · ${m.version || ''} · ${m.thinkingLevel || ''}</div></td>
         <td class="model-cell"><span class="persona">${m.persona || '—'}</span></td>
         ${boardCells}
         ${cells}
         <td class="total-cell">${m.total.toFixed(1)}</td>
-        <td><span class="badge" style="color:${b.color}">${icon(b.icon, 13)} ${b.name}</span></td>
+        <td><span class="badge" style="background:${b.color}">${icon(b.icon, 13)} ${b.name}</span></td>
         <td class="hint">${fmtCost(m)}</td>
         <td class="hint">${m.runs || 1}× / ${m.source === 'sample' ? '示例' : (m.source || '官方')}</td>
       </tr>`;
     }).join('');
 
-    $('radar-wall').innerHTML = models.map(m => {
+    $('radar-wall').innerHTML = models.map((m, i) => {
       const vals = levelIds.map(l => m.scores[l] ?? 0);
-      return `<div class="radar-card"><div class="t">${m.name}</div>
-        ${radarSVG(vals, levelIds.map(id => SHORT[id] || id), { size: 170 })}<div class="s">${m.total.toFixed(1)} 分</div></div>`;
+      return `<div class="radar-card rv"><div class="t">${m.name}</div>
+        ${radarSVG(vals, levelIds.map(id => SHORT[id] || id), { size: 175, color: PALETTE[i % PALETTE.length] })}<div class="s"><b>${m.total.toFixed(1)}</b> 分</div></div>`;
     }).join('');
 
     // 成本榜：性价比 = 总分 ÷ 折算费用，高在前（"谁最便宜还最能打"）
@@ -130,19 +171,22 @@ async function main() {
       .sort((a, b) => b.ratio - a.ratio);
     $('cost-body').innerHTML = withCost.length ? withCost.map(({ m, cny, ratio }, i) => `
       <tr>
-        <td class="rank ${i < 3 ? 'r' + (i + 1) : ''}">${i + 1}</td>
+        <td class="rank ${i < 3 ? 'r' + (i + 1) : ''}"><span class="rk">${i + 1}</span></td>
         <td class="model-cell"><div class="name">${m.name}</div><div class="meta">${m.vendor || ''} · ${m.version || ''}</div></td>
         <td class="total-cell">${m.total.toFixed(1)}</td>
         <td class="hint">${m.tokens ? `${((m.tokens.in + m.tokens.out) / 1000).toFixed(0)}k` : '—'}</td>
         <td class="hint">${m.currency === 'CNY' ? '¥' : '$'}${Number(m.cost).toFixed(2)}</td>
         <td class="hint">¥${cny.toFixed(1)}</td>
-        <td class="total-cell" style="font-size:15px">${ratio.toFixed(1)}</td>
+        <td class="total-cell"><span class="ratio-big">${ratio.toFixed(1)}</span></td>
       </tr>`).join('') : '<tr><td colspan="7" class="hint">本期暂无成本数据</td></tr>';
+
+    observeReveals();
   }
 
   sel.addEventListener('change', () => render(sel.value));
   if (episodes.length) await render(episodes[0].file);
   else $('episode-title').textContent = '暂无测评数据，敬请期待';
+  observeReveals();
 }
 
 main().catch(e => {

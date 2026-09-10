@@ -1,6 +1,7 @@
 import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs';
 import { radarSVG } from './radar.mjs';
 import { icon, hydrateIcons } from './icons.mjs';
+import { observeReveals } from './fx.mjs';
 
 const $ = (id) => document.getElementById(id);
 const LEVEL_FILES = {
@@ -226,12 +227,16 @@ function showResult(model, lvScores, perLevel) {
   lastResult = { model, levels: lvScores, perLevel, total: t, badge: b };
   $('result-card').hidden = false;
   $('result-model').textContent = `${model} · 单次采样 · ${new Date().toLocaleDateString('zh-CN')}`;
-  $('result-total').textContent = t.toFixed(1);
-  $('result-badge').innerHTML = `<span class="badge" style="color:${b.color};font-size:16px">${icon(b.icon, 15)} 安全驾照 · ${b.name}</span>`;
+  const rt = $('result-total');
+  rt.classList.remove('in');
+  rt.dataset.count = t;
+  rt.textContent = '0';
+  $('result-badge').innerHTML = `<span class="badge stamp-anim" style="background:${b.color};font-size:16px">${icon(b.icon, 15)} 安全驾照 · ${b.name}</span>`;
   $('result-comment').textContent = commentFor(lvScores);
   const ids = Object.keys(lvScores);
-  $('result-radar').innerHTML = radarSVG(ids.map(i => lvScores[i]), ids.map(i => levels[i].name), { size: 220 });
+  $('result-radar').innerHTML = radarSVG(ids.map(i => lvScores[i]), ids.map(i => levels[i].name), { size: 230, color: '#FFD02F' });
   $('result-levels').innerHTML = ids.map(i => `<span class="pill">${levels[i].id} ${levels[i].name}：<b>${lvScores[i].toFixed(1)}</b></span>`).join('');
+  observeReveals();
   $('result-card').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -291,87 +296,151 @@ async function run(demo) {
   if (finished) showResult(name, finalScores, perLevel);
 }
 
-// ---------- 分享海报 ----------
+// ---------- 分享海报（新粗野主义纸卡风） ----------
 function drawPoster() {
   if (!lastResult) return;
   const cv = $('poster-canvas'), ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height;
-  const g = ctx.createLinearGradient(0, 0, W, H);
-  g.addColorStop(0, '#0b0f17'); g.addColorStop(1, '#141b30');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = 'rgba(34,211,238,.10)';
-  ctx.beginPath(); ctx.arc(W * 0.85, 120, 260, 0, 7); ctx.fill();
-  ctx.fillStyle = 'rgba(167,139,250,.10)';
-  ctx.beginPath(); ctx.arc(80, H * 0.8, 220, 0, 7); ctx.fill();
+  const INK = '#191512', PAPER = '#F6EFDD', PAPER2 = '#FFFBEF', YELLOW = '#FFD02F', RED = '#FF5A5F';
+  const PALETTE = ['#FF5A5F', '#4D7CFE', '#06D6A0', '#FF9F1C', '#FF8FAB', '#B388FF'];
+
+  // 纸底 + 浅色网格
+  ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(25,21,18,.06)'; ctx.lineWidth = 1;
+  for (let x = 0; x <= W; x += 28) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y <= H; y += 28) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+  // 黑黄警示带（顶/底）
+  const tape = (y, h) => {
+    ctx.save(); ctx.beginPath(); ctx.rect(0, y, W, h); ctx.clip();
+    ctx.fillStyle = INK; ctx.fillRect(0, y, W, h);
+    ctx.fillStyle = YELLOW;
+    for (let x = -h * 2; x < W + h * 2; x += h * 2) {
+      ctx.save(); ctx.translate(x, y + h / 2); ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-h / 2, -h * 1.6, h, h * 3.2); ctx.restore();
+    }
+    ctx.restore();
+    ctx.strokeStyle = INK; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(0, y + h); ctx.lineTo(W, y + h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  };
+  tape(0, 30); tape(H - 30, 30);
 
   ctx.textAlign = 'center';
-  // 标题：手绘描边盾牌（与 icons.mjs 的 shield 同一路径）+ 文字
+  // 标题：描边盾牌（与 icons.mjs 同路径）+ 站点名
   const shieldPath = new Path2D('M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z');
-  ctx.fillStyle = '#22d3ee'; ctx.font = 'bold 34px sans-serif';
-  const titleW = ctx.measureText('AI-SAFE Arena').width;
-  ctx.fillText('AI-SAFE Arena', W / 2, 100);
+  ctx.fillStyle = INK; ctx.font = '900 42px sans-serif';
+  const titleW = ctx.measureText('AI-SAFE ARENA').width;
+  ctx.fillText('AI-SAFE ARENA', W / 2 + 16, 106);
   ctx.save();
-  ctx.translate(W / 2 - titleW / 2 - 52, 66);
-  ctx.scale(1.2, 1.2);
-  ctx.lineWidth = 2.6; ctx.strokeStyle = '#22d3ee'; ctx.stroke(shieldPath);
+  ctx.translate(W / 2 - titleW / 2 - 56, 66);
+  ctx.scale(1.7, 1.7);
+  ctx.fillStyle = YELLOW; ctx.fill(shieldPath);
+  ctx.lineWidth = 1.8; ctx.strokeStyle = INK; ctx.stroke(shieldPath);
   ctx.restore();
-  ctx.fillStyle = '#8b98ad'; ctx.font = '22px sans-serif';
-  ctx.fillText('AI城·安全竞技场 ｜ 你的 AI 安全驾照成绩单', W / 2, 140);
 
-  ctx.fillStyle = '#e5ecf5'; ctx.font = 'bold 40px sans-serif';
-  ctx.fillText(String(lastResult.model).slice(0, 24), W / 2, 210);
+  // 黄色贴纸副标题（旋转 -2°）
+  ctx.save();
+  ctx.translate(W / 2, 152); ctx.rotate(-2 * Math.PI / 180);
+  ctx.font = 'bold 21px sans-serif';
+  const sub = 'AI城·安全竞技场 ｜ 安全驾照考试成绩单';
+  const subW = ctx.measureText(sub).width + 36;
+  ctx.fillStyle = INK; ctx.fillRect(-subW / 2 + 4, -19 + 4, subW, 38); // 硬阴影
+  ctx.fillStyle = YELLOW; ctx.fillRect(-subW / 2, -19, subW, 38);
+  ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.strokeRect(-subW / 2, -19, subW, 38);
+  ctx.fillStyle = INK; ctx.fillText(sub, 0, 8);
+  ctx.restore();
 
-  ctx.fillStyle = '#22d3ee'; ctx.font = 'bold 150px sans-serif';
-  ctx.fillText(lastResult.total.toFixed(1), W / 2, 380);
-  ctx.fillStyle = lastResult.badge.color; ctx.font = 'bold 38px sans-serif';
-  ctx.fillText(`安全驾照 · ${lastResult.badge.name} 段位`, W / 2, 450);
+  // 模型名
+  ctx.fillStyle = INK; ctx.font = '900 38px sans-serif';
+  ctx.fillText(String(lastResult.model).slice(0, 24), W / 2, 226);
 
-  // 雷达（canvas 手绘）
+  // 总分大卡（黄底黑边硬阴影）
+  const cw = 300, ch = 196, cx0 = W / 2 - cw / 2, cy0 = 258;
+  ctx.fillStyle = INK; ctx.fillRect(cx0 + 9, cy0 + 9, cw, ch);
+  ctx.fillStyle = YELLOW; ctx.fillRect(cx0, cy0, cw, ch);
+  ctx.lineWidth = 4; ctx.strokeStyle = INK; ctx.strokeRect(cx0, cy0, cw, ch);
+  ctx.fillStyle = INK; ctx.font = '900 118px "JetBrains Mono", Consolas, monospace';
+  ctx.fillText(lastResult.total.toFixed(1), W / 2, cy0 + 128);
+  ctx.font = '700 17px "JetBrains Mono", Consolas, monospace';
+  ctx.fillText('TOTAL SCORE / 100', W / 2, cy0 + 168);
+
+  // 段位红章（旋转 -14° 双层圆章）
+  const b = lastResult.badge;
+  ctx.save();
+  ctx.translate(742, 330); ctx.rotate(-14 * Math.PI / 180);
+  ctx.strokeStyle = RED; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(0, 0, 64, 0, 7); ctx.stroke();
+  ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 53, 0, 7); ctx.stroke();
+  ctx.fillStyle = RED; ctx.font = '900 30px sans-serif';
+  ctx.fillText(b.name, 0, 2);
+  ctx.font = '700 13px sans-serif';
+  ctx.fillText('安全驾照', 0, 26);
+  ctx.fillText('CERTIFIED', 0, -20);
+  ctx.restore();
+
+  // 雷达图（墨色网格 + 黄填充）
   const ids = Object.keys(lastResult.levels);
-  const cx = W / 2, cy = 650, r = 150;
-  ctx.strokeStyle = '#223047';
+  const rcx = W / 2, rcy = 660, rr = 132;
+  ctx.strokeStyle = INK;
   for (const f of [0.33, 0.66, 1]) {
     ctx.beginPath();
     ids.forEach((_, i) => {
       const a = -Math.PI / 2 + 2 * Math.PI * i / ids.length;
-      const x = cx + Math.cos(a) * r * f, y = cy + Math.sin(a) * r * f;
+      const x = rcx + Math.cos(a) * rr * f, y = rcy + Math.sin(a) * rr * f;
       i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
     });
-    ctx.closePath(); ctx.stroke();
+    ctx.closePath();
+    ctx.lineWidth = f === 1 ? 2.5 : 1.2; ctx.globalAlpha = f === 1 ? .8 : .3; ctx.stroke();
   }
+  ctx.globalAlpha = 1;
+  ctx.setLineDash([4, 4]); ctx.lineWidth = 1.2; ctx.globalAlpha = .35;
+  ids.forEach((_, i) => {
+    const a = -Math.PI / 2 + 2 * Math.PI * i / ids.length;
+    ctx.beginPath(); ctx.moveTo(rcx, rcy);
+    ctx.lineTo(rcx + Math.cos(a) * rr, rcy + Math.sin(a) * rr); ctx.stroke();
+  });
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
   ctx.beginPath();
   ids.forEach((id, i) => {
     const a = -Math.PI / 2 + 2 * Math.PI * i / ids.length;
     const v = Math.max(0.02, Math.min(1, lastResult.levels[id] / 100));
-    const x = cx + Math.cos(a) * r * v, y = cy + Math.sin(a) * r * v;
+    const x = rcx + Math.cos(a) * rr * v, y = rcy + Math.sin(a) * rr * v;
     i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
   });
   ctx.closePath();
-  ctx.fillStyle = 'rgba(34,211,238,.30)'; ctx.fill();
-  ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 3; ctx.stroke(); ctx.lineWidth = 1;
-  ctx.fillStyle = '#8b98ad'; ctx.font = '24px sans-serif';
+  ctx.fillStyle = 'rgba(255,208,47,.45)'; ctx.fill();
+  ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke(); ctx.lineWidth = 1;
+  ctx.fillStyle = INK; ctx.font = 'bold 21px sans-serif';
   ids.forEach((id, i) => {
     const a = -Math.PI / 2 + 2 * Math.PI * i / ids.length;
-    ctx.fillText(`${levels[id].name} ${lastResult.levels[id].toFixed(0)}`, cx + Math.cos(a) * (r + 45), cy + Math.sin(a) * (r + 45));
+    ctx.fillText(`${levels[id].name} ${lastResult.levels[id].toFixed(0)}`, rcx + Math.cos(a) * (rr + 52), rcy + Math.sin(a) * (rr + 52) + 7);
   });
 
-  // 分关条
+  // 分关条（白底黑框 + 六色填充）
   let y = 880;
-  for (const id of ids) {
+  ids.forEach((id, i) => {
     const lv = levels[id];
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#e5ecf5'; ctx.font = '26px sans-serif';
-    ctx.fillText(`${lv.id} ${lv.name}`, 90, y + 22);
-    ctx.fillStyle = '#223047'; ctx.fillRect(90 + 300, y + 2, 420, 26);
-    const grad = ctx.createLinearGradient(420, 0, 900, 0);
-    grad.addColorStop(0, '#22d3ee'); grad.addColorStop(1, '#a78bfa');
-    ctx.fillStyle = grad; ctx.fillRect(90 + 300, y + 2, 420 * Math.min(1, lastResult.levels[id] / 100), 26);
-    y += 70;
-  }
-  ctx.textAlign = 'center'; ctx.fillStyle = '#8b98ad'; ctx.font = '22px sans-serif';
-  ctx.fillText('民间自测 · 单次采样 · 不计入官方榜', W / 2, H - 120);
-  ctx.fillStyle = '#667'; ctx.font = '20px sans-serif';
-  ctx.fillText(new Date().toLocaleDateString('zh-CN') + ' ｜ 题库与判分开源可复现', W / 2, H - 80);
+    ctx.fillStyle = INK; ctx.font = '800 24px sans-serif';
+    ctx.fillText(`${lv.id} ${lv.name}`, 80, y + 24);
+    // 硬阴影 + 白底框
+    ctx.fillStyle = INK; ctx.fillRect(336 + 4, y + 4, 420, 30);
+    ctx.fillStyle = PAPER2; ctx.fillRect(336, y, 420, 30);
+    ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.strokeRect(336, y, 420, 30);
+    const w = 414 * Math.min(1, lastResult.levels[id] / 100);
+    if (w > 0) { ctx.fillStyle = PALETTE[i % PALETTE.length]; ctx.fillRect(339, y + 3, w, 24); }
+    ctx.fillStyle = INK; ctx.font = '900 24px "JetBrains Mono", Consolas, monospace';
+    ctx.fillText(lastResult.levels[id].toFixed(0), 776, y + 24);
+    y += 58;
+  });
+
+  // 底部说明
+  ctx.textAlign = 'center'; ctx.fillStyle = INK; ctx.font = '700 20px sans-serif';
+  ctx.fillText('民间自测 · 单次采样 · 不计入官方榜', W / 2, H - 108);
+  ctx.globalAlpha = .55; ctx.font = '18px sans-serif';
+  ctx.fillText(new Date().toLocaleDateString('zh-CN') + ' ｜ 题库与判分开源可复现 · unclecheng-li.github.io/ai-safe-arena', W / 2, H - 72);
+  ctx.globalAlpha = 1;
 
   const a = document.createElement('a');
   a.download = `ai-safe-arena-${String(lastResult.model).replace(/\s+/g, '_')}.png`;
@@ -380,8 +449,17 @@ function drawPoster() {
 }
 
 // ---------- 初始化 ----------
+// 跑马灯内容（试测页专属文案）
+function fillMarquee() {
+  const items = ['自带 Key · 现场开考', 'Key 不出你的浏览器', '民间自测 · 不计入官方榜', '六关 95 题 · 单关 1-4 分钟', '翻车不丢人 · 亮了才算数'];
+  const html = items.map(t => `<span>${t}</span><b>◆</b>`).join('');
+  $('marquee-track').innerHTML = html + html;
+}
+
 async function init() {
   hydrateIcons();
+  fillMarquee();
+  observeReveals();
   // 服务商下拉
   $('provider').innerHTML = Object.entries(PROVIDERS).map(([k, p]) => `<option value="${k}">${p.label}</option>`).join('');
   $('provider').addEventListener('change', applyProviderPreset);

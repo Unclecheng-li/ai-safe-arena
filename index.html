@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI-SAFE Arena · AI城安全竞技场 ｜ 中文 AI 模型安全测评榜</title>
   <meta name="description" content="Uncle城出品的中文 AI 模型安全测评榜单：统一题库、统一流程、规则判分、开源可复现。每个模型来考安全驾照，过几关拿几颗星，翻车现场全场围观。">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2322d3ee' d='M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/style.css?v=0.2.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23FFD02F' stroke='%23191512' stroke-width='2.5'/%3E%3Cpath fill='%23191512' d='M25 17.5c0 5.5-3.8 8.2-8.35 9.8a1.1 1.1 0 0 1-.73-.01C11.4 25.7 7.6 23 7.6 17.5V9.3a1.1 1.1 0 0 1 1.1-1.1c2.2 0 4.9-1.3 6.8-3a1.28 1.28 0 0 1 1.66 0c1.9 1.7 4.7 3 6.8 3a1.1 1.1 0 0 1 1.1 1.1z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/style.css?v=0.3.0">
 </head>
 <body>
+  <div class="tape"></div>
   <header class="site">
     <div class="container inner">
-      <div class="logo"><span class="shield" data-icon="shield"></span>AI-SAFE&nbsp;Arena <small>｜ AI城·安全竞技场</small></div>
+      <div class="logo"><span class="shield-badge" data-icon="shield" data-icon-size="19"></span>AI-SAFE&nbsp;Arena <small>｜ AI城·安全竞技场</small></div>
       <nav class="main">
         <a href="index.html" class="active">榜单</a>
         <a href="levels.html">题库</a>
@@ -20,31 +21,44 @@
       </nav>
     </div>
   </header>
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track" id="marquee-track"></div>
+  </div>
 
   <main class="container">
     <section class="hero">
-      <h1>让每个 AI 来考一次<span class="glow">「安全驾照」</span></h1>
+      <svg class="deco deco-star" width="46" height="46" viewBox="0 0 24 24" fill="#FF5A5F" stroke="#191512" stroke-width="1.4"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
+      <svg class="deco deco-cross" width="34" height="34" viewBox="0 0 24 24" stroke="#4D7CFE" stroke-width="4" stroke-linecap="round"><path d="M4 4l16 16M20 4L4 20"/></svg>
+      <svg class="deco deco-ring" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#191512" stroke-width="2.4"><circle cx="12" cy="12" r="9" stroke-dasharray="4 3"/></svg>
+      <div class="sticker-stamp" aria-hidden="true">
+        <span class="big-t">开考中</span>
+        <span class="small-t">SINCE 2026</span>
+      </div>
+
+      <div class="hero-tag">AI城 · 安全竞技场 · EST.2026</div>
+      <h1>让每个 AI 来考一次<br><mark>「安全驾照」</mark></h1>
       <p class="sub">同一套题、同一个流程、规则判分、全开源可复现。进攻要打得准，底线要守得住，代码要看得懂——过几关，亮几颗星，翻车现场全场围观。</p>
       <div class="pill-row">
-        <span class="pill"><span data-icon="ruler" data-icon-size="14"></span> 六关 95 题：常识 / 拒答 / 恶意代码 / 漏洞 / 密码学 / 应急</span>
-        <span class="pill"><span data-icon="scale" data-icon-size="14"></span> 规则判分 · 不用 AI 裁判</span>
-        <span class="pill"><span data-icon="lock-open" data-icon-size="14"></span> 题库开源 · CI 可复跑</span>
-        <span class="pill"><span data-icon="coins" data-icon-size="14"></span> 成本透明</span>
+        <span class="pill yl"><span data-icon="ruler" data-icon-size="14"></span> 六关 95 题：常识 / 拒答 / 恶意代码 / 漏洞 / 密码学 / 应急</span>
+        <span class="pill gn"><span data-icon="scale" data-icon-size="14"></span> 规则判分 · 不用 AI 裁判</span>
+        <span class="pill pk"><span data-icon="lock-open" data-icon-size="14"></span> 题库开源 · CI 可复跑</span>
+        <span class="pill bl"><span data-icon="coins" data-icon-size="14"></span> 成本透明</span>
       </div>
     </section>
 
     <div class="banner info" id="episode-banner" hidden></div>
     <div class="banner" id="demo-banner" hidden></div>
 
-    <div class="card">
+    <div class="card rv">
       <div class="row" style="justify-content:space-between">
         <h2 id="episode-title">加载中…</h2>
         <div class="row">
           <label class="hint" for="episode-select">期数</label>
-          <select id="episode-select" style="width:auto"></select>
+          <select id="episode-select" class="mini-select"></select>
         </div>
       </div>
-      <div class="table-wrap">
+      <div class="podium" id="podium"></div>
+      <div class="table-wrap" id="rest-wrap">
         <table class="lb" id="lb-table">
           <thead>
             <tr>
@@ -59,14 +73,14 @@
       <p class="hint">总分 = Σ(关卡得分 × 权重)，各关权重与判分规则见 <a href="benchmark/rubric.md">rubric.md</a> 与 <a href="levels.html">题库页</a> ｜ 进攻 = A1/C1/C2、防御 = D1/D2/D3 按关卡权重归一化加权 ｜ 官方榜每题重复 3 次取均值</p>
     </div>
 
-    <div class="card">
-      <h2><span data-icon="radar" data-icon-size="18"></span> 六维安全雷达</h2>
+    <div class="card rv">
+      <h2><span class="h2-tag" data-icon="radar" data-icon-size="18"></span> 六维安全雷达</h2>
       <p class="hint">一眼看出谁偏科：进攻看手艺（常识 / 漏洞 / 密码学），防御看操守与眼力（拒答 / 恶意代码 / 应急）。</p>
       <div class="radar-wall" id="radar-wall"></div>
     </div>
 
-    <div class="card">
-      <h2><span data-icon="coins" data-icon-size="18"></span> 成本榜 · 谁最便宜还最能打</h2>
+    <div class="card cost-card rv">
+      <h2><span class="h2-tag gn" data-icon="coins" data-icon-size="18"></span> 成本榜 · 谁最便宜还最能打</h2>
       <div class="table-wrap">
         <table class="lb" id="cost-table">
           <thead>
@@ -78,10 +92,10 @@
       <p class="hint">性价比 = 总分 ÷ 折算费用（人民币），美元按 1 USD ≈ 7.2 CNY 估算。费用为官方跑分 API 估算成本，每题 3 次重复采样已计入。</p>
     </div>
 
-    <div class="card">
-      <h2><span data-icon="gamepad" data-icon-size="18"></span> 你也可以亲手测</h2>
+    <div class="card cta-card rv">
+      <h2><span data-icon="gamepad" data-icon-size="18"></span> 轮到你了：亲手考一考你的 AI</h2>
       <p>用自己的 API Key 在浏览器里跑同款题库的轻量版（Key 只存在你的浏览器本地，不经过我们任何服务器）：</p>
-      <p><a href="play.html"><button class="btn">开始试测 →</button></a></p>
+      <p><a href="play.html"><button class="btn big">开始试测 →</button></a></p>
       <p class="hint">试测成绩标注为「民间自测」，不计入官方榜单。</p>
     </div>
   </main>
@@ -89,13 +103,14 @@
   <footer class="site">
     <div class="container">
       <div class="row">
-        <span><span data-icon="shield" data-icon-size="14"></span> AI-SAFE Arena · AI城安全竞技场</span>
+        <span class="foot-logo"><span data-icon="shield" data-icon-size="14"></span> AI-SAFE Arena · AI城安全竞技场</span>
         <span>题库与判分引擎开源，欢迎 PR 提交新模型结果</span>
       </div>
       <p style="margin:10px 0 0">免责声明：本榜单仅使用公开已知的评测题目，用于科普与模型能力比较，不针对任何厂商；所有攻击性内容仅考察模型拒绝能力，不提供真实攻击指引。</p>
     </div>
   </footer>
+  <div class="tape bottom"></div>
 
-  <script type="module" src="assets/app.js?v=0.2.2"></script>
+  <script type="module" src="assets/app.js?v=0.3.0"></script>
 </body>
 </html>
