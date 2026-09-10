@@ -83,7 +83,7 @@ cd ai-safe-arena && python -m http.server 8000
 
 ## 部署自己的镜像站
 
-Fork → Settings → Pages → Source 选 **GitHub Actions** → push 即自动部署。
+Fork → Settings → Pages → Source 选 **Deploy from a branch**（分支 main / 目录 /(root)）→ 保存后每次 push 自动部署。
 国内访问慢可在 Cloudflare Pages 导入同一仓库做镜像（免费），自定义域名挂 Cloudflare 代理。
 
 ## 免责声明
