@@ -110,7 +110,7 @@ const DEMO_RESPONSES = {
 // 官方公网代理：部署 infra/cors-proxy-worker.js 到 Cloudflare Workers 后，把地址填到这里
 // （例如 'https://aisafe-proxy.your-name.workers.dev'）。填好后，ark/Kimi 等需要代理的服务商
 //  会自动预填此地址，粉丝无需任何本地配置。留空则退回本地代理 http://localhost:8787。
-const OFFICIAL_PROXY_URL = '';
+const OFFICIAL_PROXY_URL = 'https://aisafe-proxy.iamloli.workers.dev';
 
 // 需要代理才能浏览器直连的服务商（CORS allow-headers 不含 Authorization 等）
 const NEEDS_PROXY_RE = /volces\.com|moonshot\.cn/;
@@ -515,10 +515,12 @@ async function init() {
       // 让 max_tokens 更小一点也没关系，这里复用默认参数
       flash($('test-result'), `<span style="color:var(--good)">${icon('check', 14)} 连接成功</span>（${r.ms}ms）：${r.text.slice(0, 40) || '(空响应)'}`);
     } catch (e) {
-      // 区分两种最常见失败：填了代理但代理没启动 / 没填代理被 CORS 拦截
+      // 区分两种最常见失败：填了代理但代理不可达 / 没填代理被 CORS 拦截
       const hint = conf.proxy
-        ? `代理 <code>${conf.proxy}</code> 不可达——请先在本机运行 <code>node infra/local-cors-proxy.mjs</code>（详见仓库 README）`
-        : `该 API 不允许浏览器直连（CORS）。请在下方「跨域代理」填 <code>http://localhost:8787</code>，并先运行 <code>node infra/local-cors-proxy.mjs</code>`;
+        ? (conf.proxy.includes('localhost')
+            ? `本地代理 <code>${conf.proxy}</code> 不可达——请先在本机运行 <code>node infra/local-cors-proxy.mjs</code>，或直接改填官方代理 <code>${OFFICIAL_PROXY_URL}</code>`
+            : `代理 <code>${conf.proxy}</code> 不可达——请检查地址是否正确，或改用演示模式`)
+        : `该 API 不允许浏览器直连（CORS）。请在下方「跨域代理」填官方代理 <code>${OFFICIAL_PROXY_URL}</code>`;
       flash($('test-result'), `<span style="color:var(--bad)">${icon('x', 14)} 连接失败</span>：${e.message}<br>${hint}`);
     }
     $('btn-test').classList.remove('loading');
