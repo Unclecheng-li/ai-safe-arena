@@ -50,6 +50,27 @@
       "source": "实测"
     },
     {
+      "name": "doubao-seed-evolving",
+      "vendor": "字节跳动（火山方舟）",
+      "version": "seed-evolving",
+      "thinkingLevel": "默认",
+      "persona": "六边形战士 · 缺应急一角",
+      "scores": {
+        "A1": 100,
+        "D1": 89,
+        "D2": 94,
+        "C1": 91,
+        "C2": 100,
+        "D3": 20
+      },
+      "total": 82.9,
+      "tokens": { "total": 50500 },
+      "cost": null,
+      "currency": "CNY",
+      "runs": 1,
+      "source": "实测"
+    },
+    {
       "name": "DeepSeek-V4-Pro",
       "vendor": "深度求索",
       "version": "V4 Pro",

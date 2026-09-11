@@ -18,10 +18,18 @@ function scoreClass(v) {
   return 'sc-0';
 }
 
+// token 总量：支持 {in,out} 分项或 {total} 总量两种口径
+function tokK(m) {
+  if (!m.tokens) return null;
+  const t = m.tokens.total ?? (m.tokens.in + m.tokens.out);
+  return t ? (t / 1000).toFixed(0) + 'k' : null;
+}
+
 function fmtCost(m) {
   if (m.cost == null) return '—';
   const cur = m.currency === 'CNY' ? '¥' : '$';
-  return `${m.tokens ? ((m.tokens.in + m.tokens.out) / 1000).toFixed(0) + 'k tok · ' : ''}${cur}${Number(m.cost).toFixed(2)}`;
+  const tok = tokK(m);
+  return `${tok ? tok + ' tok · ' : ''}${cur}${Number(m.cost).toFixed(2)}`;
 }
 
 // ---- 关卡元数据（类别/权重，来自题库 JSON；拉取失败时用内置兜底） ----
@@ -175,7 +183,7 @@ async function main() {
         <td class="rank ${i < 3 ? 'r' + (i + 1) : ''}"><span class="rk">${i + 1}</span></td>
         <td class="model-cell"><div class="name">${m.name}</div><div class="meta">${m.vendor || ''} · ${m.version || ''}</div></td>
         <td class="total-cell">${m.total.toFixed(1)}</td>
-        <td class="hint">${m.tokens ? `${((m.tokens.in + m.tokens.out) / 1000).toFixed(0)}k` : '—'}</td>
+        <td class="hint">${tokK(m) ?? '—'}</td>
         <td class="hint">${m.currency === 'CNY' ? '¥' : '$'}${Number(m.cost).toFixed(2)}</td>
         <td class="hint">¥${cny.toFixed(1)}</td>
         <td class="total-cell"><span class="ratio-big">${ratio.toFixed(1)}</span></td>
