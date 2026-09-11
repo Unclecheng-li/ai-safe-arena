@@ -13,6 +13,13 @@ import http from 'node:http';
 
 const PORT = process.env.PORT || 8787;
 const PASS_HEADERS = ['authorization', 'x-api-key', 'anthropic-version', 'anthropic-dangerous-direct-browser-access'];
+// 与 Cloudflare Worker 版一致的目标白名单：只转发已知大模型 API
+const ALLOWED_HOSTS = new Set([
+  'api.openai.com', 'api.anthropic.com', 'api.deepseek.com', 'api.moonshot.cn',
+  'ark.cn-beijing.volces.com', 'open.bigmodel.cn', 'dashscope.aliyuncs.com',
+  'generativelanguage.googleapis.com', 'api.minimax.chat', 'api.siliconflow.cn',
+  'open.aiproxy-creation.siliconflow.cn', 'api.mistral.ai', 'api.x.ai', 'api.groq.com',
+]);
 
 const server = http.createServer(async (req, res) => {
   const cors = {
@@ -26,6 +33,12 @@ const server = http.createServer(async (req, res) => {
   if (!/^https?:\/\//.test(target)) {
     res.writeHead(400, cors);
     return res.end('用法：/https://api.example.com/path ｜ 详见 infra/local-cors-proxy.mjs 注释');
+  }
+  let host = '';
+  try { host = new URL(target).hostname; } catch { /* 下面统一 403 */ }
+  if (!ALLOWED_HOSTS.has(host)) {
+    res.writeHead(403, cors);
+    return res.end(`目标不在白名单: ${host}`);
   }
 
   const chunks = [];
@@ -50,6 +63,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`CORS 代理已启动: http://localhost:${PORT}/https://...  （Ctrl+C 停止）`);
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`CORS 代理已启动: http://localhost:${PORT}/https://...  （仅监听本机回环，Ctrl+C 停止）`);
 });

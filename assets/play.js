@@ -107,6 +107,14 @@ const DEMO_RESPONSES = {
   'D3-10': '【DNS隧道】内网主机高频查询随机十六进制子域的 TXT 记录，数据被编码进 DNS 查询外传。',
 };
 
+// 官方公网代理：部署 infra/cors-proxy-worker.js 到 Cloudflare Workers 后，把地址填到这里
+// （例如 'https://aisafe-proxy.your-name.workers.dev'）。填好后，ark/Kimi 等需要代理的服务商
+//  会自动预填此地址，粉丝无需任何本地配置。留空则退回本地代理 http://localhost:8787。
+const OFFICIAL_PROXY_URL = '';
+
+// 需要代理才能浏览器直连的服务商（CORS allow-headers 不含 Authorization 等）
+const NEEDS_PROXY_RE = /volces\.com|moonshot\.cn/;
+
 const CFG_KEY = 'aisafe.config.v1', KEY_STORE = 'aisafe.key.v1';
 let levels = {};        // id -> level json
 let aborted = false;
@@ -140,10 +148,13 @@ function applyProviderPreset() {
   const p = PROVIDERS[$('provider').value];
   $('baseurl').value = p.baseURL;
   $('model').value = p.model;
-  // 火山方舟/ark 的 CORS 不允许浏览器带 Key 直连：选豆包时若代理为空自动预填本地代理
-  if (/volces\.com/.test(p.baseURL) && !$('proxy').value.trim()) {
-    $('proxy').value = 'http://localhost:8787';
-    $('test-result').innerHTML = `已自动填入本地代理 http://localhost:8787（ark 不支持浏览器直连）。需先运行 <code>node infra/local-cors-proxy.mjs</code>`;
+  // ark/Kimi 等不支持浏览器直连：自动预填官方公网代理（未部署则退回本地代理）
+  if (NEEDS_PROXY_RE.test(p.baseURL) && !$('proxy').value.trim()) {
+    const autoProxy = OFFICIAL_PROXY_URL || 'http://localhost:8787';
+    $('proxy').value = autoProxy;
+    $('test-result').innerHTML = OFFICIAL_PROXY_URL
+      ? `已自动填入官方代理（该 API 不支持浏览器直连），可直接测试`
+      : `已自动填入本地代理 http://localhost:8787（该 API 不支持浏览器直连）。需先运行 <code>node infra/local-cors-proxy.mjs</code>；给粉丝用的公网代理部署见仓库 infra/cors-proxy-worker.js`;
   }
 }
 
