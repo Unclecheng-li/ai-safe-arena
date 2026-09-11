@@ -1,5 +1,5 @@
 import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs?v=1';
-import { radarSVG } from './radar.mjs?v=1';
+import { radarSVG } from './radar.mjs?v=2';
 import { icon, hydrateIcons } from './icons.mjs?v=1';
 import { observeReveals, initLively, confetti, showTip } from './fx.mjs?v=1';
 
@@ -234,7 +234,7 @@ function showResult(model, lvScores, perLevel) {
   $('result-badge').innerHTML = `<span class="badge stamp-anim" style="background:${b.color};font-size:16px">${icon(b.icon, 15)} 安全驾照 · ${b.name}</span>`;
   $('result-comment').textContent = commentFor(lvScores);
   const ids = Object.keys(lvScores);
-  $('result-radar').innerHTML = radarSVG(ids.map(i => lvScores[i]), ids.map(i => levels[i].name), { size: 230, color: '#FFD02F' });
+  $('result-radar').innerHTML = radarSVG(ids.map(i => lvScores[i]), ids.map(i => levels[i].name), { size: 230, color: '#FFD02F', minW: 500 });
   $('result-levels').innerHTML = ids.map(i => `<span class="pill">${levels[i].id} ${levels[i].name}：<b>${lvScores[i].toFixed(1)}</b></span>`).join('');
   observeReveals();
   $('result-card').scrollIntoView({ behavior: 'smooth' });

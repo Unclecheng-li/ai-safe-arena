@@ -1,4 +1,4 @@
-import { radarSVG } from './radar.mjs?v=1';
+import { radarSVG } from './radar.mjs?v=2';
 import { badgeFor } from './scoring.mjs?v=1';
 import { icon, hydrateIcons } from './icons.mjs?v=1';
 import { observeReveals, initLively } from './fx.mjs?v=1';

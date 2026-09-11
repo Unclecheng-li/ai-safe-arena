@@ -50,8 +50,11 @@ export function radarSVG(values, labels, opts = {}) {
   });
   mx = Math.max(0, Math.ceil(mx));
   const my = 10; // 顶部/底部标签半高余量，防上缘裁切
+  // minW：viewBox 最小宽度（试测页成绩单传 500，保证长标签两侧余量）
+  const vw = Math.max(size + 2 * mx, Math.ceil(opts.minW || 0));
+  const vx = (size - vw) / 2;
 
-  return `<svg viewBox="${-mx} ${-my} ${size + 2 * mx} ${size + 2 * my}" width="${size + 2 * mx}" height="${size + 2 * my}" style="max-width:100%;height:auto" xmlns="http://www.w3.org/2000/svg">
+  return `<svg viewBox="${vx.toFixed(0)} ${-my} ${vw} ${size + 2 * my}" width="${vw}" height="${size + 2 * my}" style="max-width:100%;height:auto" xmlns="http://www.w3.org/2000/svg">
     ${grid}${axis}
     <polygon class="rp" points="${poly}" fill="${accent}" fill-opacity="0.38" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>
     ${dots}
