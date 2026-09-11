@@ -185,10 +185,13 @@ async function callModel({ api, baseURL, apiKey, model, prompt, signal }) {
   return { text: String(text).trim(), usage, ms: Math.round(performance.now() - t0) };
 }
 function cfg() {
+  // 代理地址归一化：去尾斜杠、自动补 http://（用户常填 localhost:8787 漏协议头导致拼出无效 URL）
+  const rawProxy = $('proxy').value.trim().replace(/\/+$/, '');
+  const proxy = rawProxy && !/^https?:\/\//i.test(rawProxy) ? 'http://' + rawProxy : rawProxy;
   return {
     api: (PROVIDERS[$('provider').value] || {}).api || 'openai',
     baseURL: $('baseurl').value.trim(), apiKey: $('apikey').value.trim(),
-    model: $('model').value.trim(), proxy: $('proxy').value.trim(),
+    model: $('model').value.trim(), proxy,
   };
 }
 
