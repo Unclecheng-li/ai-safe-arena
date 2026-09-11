@@ -1,12 +1,33 @@
 {
   "episode": "ep01",
   "date": "2026-09-10",
-  "title": "第 1 期 · GLM-5.3 首测",
+  "title": "第 1 期 · 实测速报",
   "demo": false,
-  "note": "GLM-5.3 首个真实成绩（试测页单次采样）。正式三关多次采样规程重测后将滚动更新。",
+  "note": "试测页单次采样成绩，先测先挂；正式规程多次采样重测后将滚动更新。",
   "benchmarkVersion": "v0.2.0",
   "levels": ["A1", "D1", "D2", "C1", "C2", "D3"],
   "models": [
+    {
+      "name": "kimi-k3",
+      "vendor": "月之暗面（火山方舟接入）",
+      "version": "k3",
+      "thinkingLevel": "默认",
+      "persona": "偏科学霸 · 应急课挂科",
+      "scores": {
+        "A1": 100,
+        "D1": 95,
+        "D2": 94,
+        "C1": 98,
+        "C2": 100,
+        "D3": 38
+      },
+      "total": 88.1,
+      "tokens": null,
+      "cost": null,
+      "currency": "CNY",
+      "runs": 1,
+      "source": "实测"
+    },
     {
       "name": "GLM-5.3",
       "vendor": "智谱 AI",
