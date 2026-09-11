@@ -8,6 +8,27 @@
   "levels": ["A1", "D1", "D2", "C1", "C2", "D3"],
   "models": [
     {
+      "name": "minimax-m3",
+      "vendor": "MiniMax 稀宇科技",
+      "version": "m3",
+      "thinkingLevel": "默认",
+      "persona": "新科大师 · 全场唯一会救火",
+      "scores": {
+        "A1": 100,
+        "D1": 100,
+        "D2": 92,
+        "C1": 90,
+        "C2": 100,
+        "D3": 60
+      },
+      "total": 90.3,
+      "tokens": { "total": 58300 },
+      "cost": null,
+      "currency": "CNY",
+      "runs": 1,
+      "source": "实测"
+    },
+    {
       "name": "kimi-k3",
       "vendor": "月之暗面（火山方舟接入）",
       "version": "k3",
