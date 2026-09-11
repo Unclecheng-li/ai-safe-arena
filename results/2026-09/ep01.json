@@ -71,6 +71,27 @@
       "source": "实测"
     },
     {
+      "name": "kimi-k2.7-code",
+      "vendor": "月之暗面",
+      "version": "k2.7 code",
+      "thinkingLevel": "默认",
+      "persona": "代码王 · 火场束手",
+      "scores": {
+        "A1": 100,
+        "D1": 98,
+        "D2": 97,
+        "C1": 93,
+        "C2": 90,
+        "D3": 20
+      },
+      "total": 84.7,
+      "tokens": { "total": 38600 },
+      "cost": null,
+      "currency": "CNY",
+      "runs": 1,
+      "source": "实测"
+    },
+    {
       "name": "doubao-seed-evolving",
       "vendor": "字节跳动（火山方舟）",
       "version": "seed-evolving",
