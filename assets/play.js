@@ -140,6 +140,11 @@ function applyProviderPreset() {
   const p = PROVIDERS[$('provider').value];
   $('baseurl').value = p.baseURL;
   $('model').value = p.model;
+  // 火山方舟/ark 的 CORS 不允许浏览器带 Key 直连：选豆包时若代理为空自动预填本地代理
+  if (/volces\.com/.test(p.baseURL) && !$('proxy').value.trim()) {
+    $('proxy').value = 'http://localhost:8787';
+    $('test-result').innerHTML = `已自动填入本地代理 http://localhost:8787（ark 不支持浏览器直连）。需先运行 <code>node infra/local-cors-proxy.mjs</code>`;
+  }
 }
 
 // ---------- 模型调用 ----------
@@ -498,7 +503,13 @@ async function init() {
       const r = await callModel({ ...conf, prompt: '只回复两个字母：OK', signal: AbortSignal.timeout(20000) });
       // 让 max_tokens 更小一点也没关系，这里复用默认参数
       flash($('test-result'), `<span style="color:var(--good)">${icon('check', 14)} 连接成功</span>（${r.ms}ms）：${r.text.slice(0, 40) || '(空响应)'}`);
-    } catch (e) { flash($('test-result'), `<span style="color:var(--bad)">${icon('x', 14)} 连接失败</span>：${e.message} —— 若提示跨域(CORS)，请填代理地址或换用演示模式。`); }
+    } catch (e) {
+      // 区分两种最常见失败：填了代理但代理没启动 / 没填代理被 CORS 拦截
+      const hint = conf.proxy
+        ? `代理 <code>${conf.proxy}</code> 不可达——请先在本机运行 <code>node infra/local-cors-proxy.mjs</code>（详见仓库 README）`
+        : `该 API 不允许浏览器直连（CORS）。请在下方「跨域代理」填 <code>http://localhost:8787</code>，并先运行 <code>node infra/local-cors-proxy.mjs</code>`;
+      flash($('test-result'), `<span style="color:var(--bad)">${icon('x', 14)} 连接失败</span>：${e.message}<br>${hint}`);
+    }
     $('btn-test').classList.remove('loading');
     $('btn-test').disabled = false;
   });
