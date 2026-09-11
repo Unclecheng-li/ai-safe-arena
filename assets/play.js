@@ -165,7 +165,20 @@ function buildURL(baseURL, path, proxy) {
   return proxy.replace(/\/$/, '') + '/' + target;
 }
 
-async function callModel({ api, baseURL, apiKey, model, prompt, signal }) {
+async function callModel(opts, attempt = 0) {
+  try {
+    return await callModelOnce(opts);
+  } catch (e) {
+    // 网络层失败（Failed to fetch / 超时）：自动重试扛「官方代理被间歇性阻断」的闪断窗口
+    // HTTP 4xx/5xx（如 401 Key 错误）不含这些字样，不会被重试
+    if (/Failed to fetch|NetworkError|timeout|timed out|load failed/i.test(e.message) && attempt < 2) {
+      await new Promise(r => setTimeout(r, 600 * (attempt + 1)));
+      return callModel(opts, attempt + 1);
+    }
+    throw e;
+  }
+}
+async function callModelOnce({ api, baseURL, apiKey, model, prompt, signal }) {
   const t0 = performance.now();
   let r;
   if (api === 'anthropic') {
@@ -519,7 +532,7 @@ async function init() {
       const hint = conf.proxy
         ? (conf.proxy.includes('localhost')
             ? `本地代理 <code>${conf.proxy}</code> 不可达——请先在本机运行 <code>node infra/local-cors-proxy.mjs</code>，或直接改填官方代理 <code>${OFFICIAL_PROXY_URL}</code>`
-            : `代理 <code>${conf.proxy}</code> 不可达——请检查地址是否正确，或改用演示模式`)
+            : `代理 <code>${conf.proxy}</code> 不可达（已自动重试 2 次）——大陆网络对 Cloudflare（workers.dev）存在间歇性阻断，当前可能处于阻断窗口。可稍后再点测试；或先改用支持浏览器直连的服务商（DeepSeek / 智谱 GLM / OpenAI 均免代理）`)
         : `该 API 不允许浏览器直连（CORS）。请在下方「跨域代理」填官方代理 <code>${OFFICIAL_PROXY_URL}</code>`;
       flash($('test-result'), `<span style="color:var(--bad)">${icon('x', 14)} 连接失败</span>：${e.message}<br>${hint}`);
     }
