@@ -49,9 +49,11 @@ async function callModel(m, prompt) {
   }
   if (!r.ok) throw new Error(`HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
   const d = await r.json();
+  // 推理模型思考占满 token 时 content 可能为空，兜底取 reasoning_content
+  const msg = d.choices?.[0]?.message ?? {};
   const text = m.api === 'anthropic'
     ? (d.content || []).map(c => c.text || '').join('\n')
-    : (d.choices?.[0]?.message?.content ?? '');
+    : String(msg.content || msg.reasoning_content || '');
   const usage = m.api === 'anthropic'
     ? { in: d.usage?.input_tokens || 0, out: d.usage?.output_tokens || 0 }
     : { in: d.usage?.prompt_tokens || 0, out: d.usage?.completion_tokens || 0 };

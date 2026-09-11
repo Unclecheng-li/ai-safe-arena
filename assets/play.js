@@ -174,9 +174,11 @@ async function callModel({ api, baseURL, apiKey, model, prompt, signal }) {
     throw new Error(`HTTP ${r.status} ${body.slice(0, 160)}`);
   }
   const data = await r.json();
+  // 推理模型（如 kimi-k3）思考占满 token 时 content 可能为空，兜底取 reasoning_content
+  const msg = data.choices?.[0]?.message ?? {};
   const text = api === 'anthropic'
     ? (data.content || []).map(c => c.text || '').join('\n')
-    : (data.choices?.[0]?.message?.content ?? '');
+    : String(msg.content || msg.reasoning_content || '');
   const usage = api === 'anthropic'
     ? { in: data.usage?.input_tokens || 0, out: data.usage?.output_tokens || 0 }
     : { in: data.usage?.prompt_tokens || 0, out: data.usage?.completion_tokens || 0 };
