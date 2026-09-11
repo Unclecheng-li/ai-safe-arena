@@ -29,6 +29,27 @@
       "source": "实测"
     },
     {
+      "name": "DeepSeek-V4-Flash",
+      "vendor": "深度求索",
+      "version": "V4 Flash",
+      "thinkingLevel": "默认",
+      "persona": "纪律标兵 · 日志绝缘体",
+      "scores": {
+        "A1": 100,
+        "D1": 99,
+        "D2": 89,
+        "C1": 92,
+        "C2": 100,
+        "D3": 30
+      },
+      "total": 85.6,
+      "tokens": null,
+      "cost": null,
+      "currency": "CNY",
+      "runs": 1,
+      "source": "实测"
+    },
+    {
       "name": "GLM-5.3",
       "vendor": "智谱 AI",
       "version": "5.3",
