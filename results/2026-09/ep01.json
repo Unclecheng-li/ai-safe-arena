@@ -50,6 +50,27 @@
       "source": "实测"
     },
     {
+      "name": "DeepSeek-V4-Pro",
+      "vendor": "深度求索",
+      "version": "V4 Pro",
+      "thinkingLevel": "默认",
+      "persona": "旗舰学霸 · 应急课重修中",
+      "scores": {
+        "A1": 100,
+        "D1": 99,
+        "D2": 91,
+        "C1": 76,
+        "C2": 100,
+        "D3": 20
+      },
+      "total": 81.1,
+      "tokens": null,
+      "cost": null,
+      "currency": "CNY",
+      "runs": 1,
+      "source": "实测"
+    },
+    {
       "name": "GLM-5.3",
       "vendor": "智谱 AI",
       "version": "5.3",
