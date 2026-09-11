@@ -241,11 +241,11 @@ function commentFor(lvScores) {
   return map[min[0]] || '各关均衡，可以放心让它当你的安全课代表';
 }
 
-function showResult(model, lvScores, perLevel) {
+function showResult(model, lvScores, perLevel, tokensTotal) {
   const total = Object.entries(lvScores).reduce((s, [id, v]) => s + v * (levels[id].weight), 0);
   const t = Math.round(total * 10) / 10;
   const b = badgeFor(t);
-  lastResult = { model, levels: lvScores, perLevel, total: t, badge: b };
+  lastResult = { model, levels: lvScores, perLevel, total: t, badge: b, tokens: tokensTotal };
   $('result-card').hidden = false;
   $('result-model').textContent = `${model} · 单次采样 · ${new Date().toLocaleDateString('zh-CN')}`;
   const rt = $('result-total');
@@ -321,7 +321,7 @@ async function run(demo) {
   for (const id of selected) finalScores[id] = levelScore(lvScores[id].map(v => ({ score: v })));
   const finished = Object.values(finalScores).length > 0;
   setStatus(aborted ? '已停止。' : demo ? '演示模式完成 ✓' : `完成 ✓ 共消耗 ${((tokens.in + tokens.out) / 1000).toFixed(1)}k tokens`);
-  if (finished) showResult(name, finalScores, perLevel);
+  if (finished) showResult(name, finalScores, perLevel, demo ? null : tokens.in + tokens.out);
 }
 
 // ---------- 分享海报（新粗野主义纸卡风） ----------
@@ -465,7 +465,7 @@ function drawPoster() {
 
   // 底部说明
   ctx.textAlign = 'center'; ctx.fillStyle = INK; ctx.font = '700 20px sans-serif';
-  ctx.fillText('民间自测 · 单次采样 · 不计入官方榜', W / 2, H - 108);
+  ctx.fillText(`民间自测 · 单次采样 · 不计入官方榜${lastResult.tokens ? ` · 消耗 ${(lastResult.tokens / 1000).toFixed(1)}k tokens` : ''}`, W / 2, H - 108);
   ctx.globalAlpha = .55; ctx.font = '18px sans-serif';
   ctx.fillText(new Date().toLocaleDateString('zh-CN') + ' ｜ 题库与判分开源可复现 · unclecheng-li.github.io/ai-safe-arena', W / 2, H - 72);
   ctx.globalAlpha = 1;
@@ -532,7 +532,8 @@ async function init() {
   $('btn-copy').addEventListener('click', async (e) => {
     if (!lastResult) return;
     const ids = Object.keys(lastResult.levels);
-    const txt = `我在 AI-SAFE Arena 测了「${lastResult.model}」的安全驾照：总分 ${lastResult.total.toFixed(1)}，段位 ${lastResult.badge.name}\n${ids.map(i => `${levels[i].name}：${lastResult.levels[i].toFixed(0)}分`).join(' ｜ ')}\n来测测你家 AI 守不守得住底线 →`;
+    const tok = lastResult.tokens ? `，共消耗 ${(lastResult.tokens / 1000).toFixed(1)}k tokens` : '';
+    const txt = `我在 AI-SAFE Arena 测了「${lastResult.model}」的安全驾照：总分 ${lastResult.total.toFixed(1)}，段位 ${lastResult.badge.name}\n${ids.map(i => `${levels[i].name}：${lastResult.levels[i].toFixed(0)}分`).join(' ｜ ')}${tok}\n来测测你家 AI 守不守得住底线 →`;
     try {
       await navigator.clipboard.writeText(txt);
       flash($('copy-result'), '已复制，去评论区/朋友圈粘贴吧！');
