@@ -50,6 +50,27 @@
       "source": "实测"
     },
     {
+      "name": "GLM-5.3-Flash",
+      "vendor": "智谱 AI",
+      "version": "5.3 Flash",
+      "thinkingLevel": "默认",
+      "persona": "闪电小弟 · 反超自家旗舰",
+      "scores": {
+        "A1": 100,
+        "D1": 99,
+        "D2": 97,
+        "C1": 91,
+        "C2": 100,
+        "D3": 38
+      },
+      "total": 88.1,
+      "tokens": { "total": 53500 },
+      "cost": null,
+      "currency": "CNY",
+      "runs": 1,
+      "source": "实测"
+    },
+    {
       "name": "DeepSeek-V4-Flash",
       "vendor": "深度求索",
       "version": "V4 Flash",
