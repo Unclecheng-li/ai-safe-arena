@@ -20,6 +20,13 @@ export function radarSVG(values, labels, opts = {}) {
 
   const poly = values.map((v, i) => pt(i, Math.max(0.02, Math.min(1, v / max))).map(x => x.toFixed(1)).join(',')).join(' ');
 
+  // 雷达扫描线（榜单页 opts.sweep 开启）：半透明扇面 + 前缘亮线，绕中心匀速旋转
+  const sweepAng = -0.85; // 扇面张角（弧度）
+  const sweep = opts.sweep ? `<g class="rs-sweep" style="transform-origin:${cx}px ${cy}px">`
+    + `<path d="M${cx} ${cy} L${(cx + r).toFixed(1)} ${cy} A${r} ${r} 0 0 0 ${(cx + r * Math.cos(sweepAng)).toFixed(1)} ${(cy + r * Math.sin(sweepAng)).toFixed(1)} Z" fill="${accent}" fill-opacity="0.13"/>`
+    + `<line x1="${cx}" y1="${cy}" x2="${(cx + r).toFixed(1)}" y2="${cy}" stroke="${accent}" stroke-width="2.2" stroke-opacity="0.9"/>`
+    + `</g>` : '';
+
   let grid = '', axis = '', ticks = '', dots = '';
   for (const frac of [0.25, 0.5, 0.75, 1]) {
     grid += `<polygon points="${ring(frac)}" fill="none" stroke="${ink}" stroke-opacity="${frac === 1 ? 0.75 : 0.22}" stroke-width="${frac === 1 ? 2 : 1.2}"/>`;
@@ -55,7 +62,7 @@ export function radarSVG(values, labels, opts = {}) {
   const vx = (size - vw) / 2;
 
   return `<svg viewBox="${vx.toFixed(0)} ${-my} ${vw} ${size + 2 * my}" width="${vw}" height="${size + 2 * my}" style="max-width:100%;height:auto" xmlns="http://www.w3.org/2000/svg">
-    ${grid}${axis}
+    ${grid}${axis}${sweep}
     <polygon class="rp" points="${poly}" fill="${accent}" fill-opacity="0.38" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>
     ${dots}
     ${ticks}

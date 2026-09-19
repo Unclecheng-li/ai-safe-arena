@@ -693,6 +693,139 @@ details[open] > p, details[open] > pre { animation: detailin .25s ease; }
   body::before, body::after, .burst-bit, .confetti-bit,
   .qcard.fail, button.btn.loading svg.icon,
   #level-checks label.pill:has(input:checked), details[open] > p, details[open] > pre,
-  .fadein, .copy-tip, #result-levels .pill, .stamp.stamp-anim, .badge.stamp-anim { animation: none !important; }
+  .fadein, .copy-tip, #result-levels .pill, .stamp.stamp-anim, .badge.stamp-anim,
+  .trail-bit, .twinkle, .rs-sweep, .live-dot::after, .podium-card.p1::after,
+  .hero h1 mark::after, .hero .pill-row .pill, .score-mini::after, #back-top { animation: none !important; }
   button.btn:hover svg.icon, .logo:hover .shield-badge { animation: none !important; }
+}
+
+/* ============================================================
+   灵动力场层（v0.4.0）—— 粒子氛围 / 雷达扫描 / 解码 / 磁吸 / 星光
+   ============================================================ */
+
+/* 全站漂浮粒子画布（fx.mjs initAmbient 注入） */
+#ambient-canvas { position: fixed; inset: 0; z-index: -3; pointer-events: none; }
+
+/* 鼠标星星尾迹（fx.mjs sparkleTrail 注入 .trail-bit） */
+.trail-bit {
+  position: fixed; z-index: 998; width: 11px; height: 11px; pointer-events: none;
+  background: var(--yellow);
+  filter: drop-shadow(1.2px 1.2px 0 var(--ink));
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: trail-fade .58s ease-out forwards;
+}
+.trail-bit.cross {
+  width: 9px; height: 9px; background: var(--ink); filter: none;
+  clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%);
+}
+@keyframes trail-fade {
+  from { transform: translate(-50%, -50%) scale(.4) rotate(0deg); opacity: 1; }
+  to   { transform: translate(-50%, -130%) scale(1.05) rotate(var(--rot, 60deg)); opacity: 0; }
+}
+
+/* 期号标题 LIVE 红点脉冲（app.js 注入 .live-dot） */
+.live-dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--red); border: 2px solid var(--ink);
+  margin-right: 9px; vertical-align: 1px; position: relative;
+}
+.live-dot::after {
+  content: ''; position: absolute; inset: -2px; border-radius: 50%;
+  border: 2px solid var(--red);
+  animation: live-ping 1.5s ease-out infinite;
+}
+@keyframes live-ping { from { transform: scale(.6); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+
+/* 分数章底部能量条（--v = 分值百分比，app.js 写入） */
+.score-mini { position: relative; overflow: hidden; padding-bottom: 6px; }
+.score-mini::after {
+  content: ''; position: absolute; left: 0; bottom: 0; height: 3.5px;
+  width: calc(var(--v, 0) * 1%);
+  background: rgba(25, 21, 18, .85);
+  animation: barfill .7s cubic-bezier(.2, .9, .3, 1) backwards;
+}
+@keyframes barfill { from { width: 0; } }
+
+/* 冠军卡斜向高光周期扫过 */
+.podium-card.p1::after {
+  content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 64px;
+  background: rgba(255, 251, 239, .55);
+  border-left: 2px solid rgba(25, 21, 18, .22);
+  border-right: 2px solid rgba(25, 21, 18, .22);
+  transform: skewX(-18deg) translateX(-180px);
+  animation: p1shine 4.2s ease-in-out 1.4s infinite;
+  pointer-events: none;
+}
+@keyframes p1shine {
+  0% { transform: skewX(-18deg) translateX(-180px); }
+  45%, 100% { transform: skewX(-18deg) translateX(480px); }
+}
+
+/* 冠军卡星星闪烁（fx.mjs twinkles 注入 .twinkle） */
+.twinkle {
+  position: absolute; z-index: 4; width: 15px; height: 15px; pointer-events: none;
+  background: var(--yellow);
+  filter: drop-shadow(1.5px 1.5px 0 var(--ink));
+  clip-path: polygon(50% 0, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0 50%, 37% 37%);
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: .15; transform: scale(calc(var(--ts, 1) * .55)) rotate(0deg); }
+  50%      { opacity: 1;   transform: scale(var(--ts, 1)) rotate(45deg); }
+}
+
+/* 雷达图旋转扫描线（radar.mjs sweep 注入 .rs-sweep），hover 加速 */
+.rs-sweep { animation: rs-rot 3.8s linear infinite; }
+@keyframes rs-rot { to { transform: rotate(360deg); } }
+.radar-card:hover .rs-sweep { animation-duration: 1.1s; }
+
+/* 英雄区鼠标聚光灯（fx.mjs heroSpotlight 写入 --mx/--my，缺省一个静态暖光） */
+.hero::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(340px circle at var(--mx, 62%) var(--my, 32%),
+    rgba(255, 208, 47, .30), transparent 72%);
+}
+
+/* 英雄区高亮题头光泽扫过 */
+.hero h1 mark::after {
+  content: ''; position: absolute; inset: 8% -2% 4% -2%; border-radius: 6px;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 251, 239, .85) 50%, transparent 68%);
+  background-size: 260% 100%; background-position: 120% 0;
+  animation: markshine 4.4s ease-in-out 1s infinite;
+  pointer-events: none;
+}
+@keyframes markshine {
+  0% { background-position: 120% 0; }
+  45%, 100% { background-position: -140% 0; }
+}
+
+/* 英雄区 pill 错峰漂浮 */
+.hero .pill-row .pill { animation: pillbob 3.4s ease-in-out infinite; }
+.hero .pill-row .pill:nth-child(2) { animation-delay: .5s; }
+.hero .pill-row .pill:nth-child(3) { animation-delay: 1s; }
+.hero .pill-row .pill:nth-child(4) { animation-delay: 1.5s; }
+@keyframes pillbob { 50% { transform: translateY(-4px) rotate(-1.2deg); } }
+
+/* 回到顶部按钮（fx.mjs backToTop 注入 #back-top） */
+#back-top {
+  position: fixed; right: 20px; bottom: 22px; z-index: 90;
+  width: 50px; height: 50px;
+  background: var(--yellow); border: var(--bd); border-radius: 12px; box-shadow: var(--sh-s);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: translateY(18px) rotate(-6deg); pointer-events: none;
+  transition: opacity .25s, transform .25s cubic-bezier(.2, 1.4, .4, 1), box-shadow .12s;
+}
+#back-top.show { opacity: 1; transform: rotate(-3deg); pointer-events: auto; }
+#back-top:hover { transform: rotate(0deg) translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+#back-top:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+#back-top svg.arr { width: 20px; height: 20px; }
+#back-top svg.ring {
+  position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px);
+  transform: rotate(-90deg); pointer-events: none;
+}
+#back-top .ring circle { fill: none; stroke-width: 3; }
+#back-top .ring .bg { stroke: var(--ink-12); }
+#back-top .ring .fg {
+  stroke: var(--red); stroke-linecap: round;
+  stroke-dasharray: 100; stroke-dashoffset: 100;
 }

@@ -1,7 +1,7 @@
-import { radarSVG } from './radar.mjs?v=2';
+import { radarSVG } from './radar.mjs?v=3';
 import { badgeFor } from './scoring.mjs?v=1';
 import { icon, hydrateIcons } from './icons.mjs?v=1';
-import { observeReveals, initLively } from './fx.mjs?v=1';
+import { observeReveals, initLively, tilt, scramble, twinkles, countUp } from './fx.mjs?v=2';
 
 const $ = (id) => document.getElementById(id);
 
@@ -126,7 +126,13 @@ async function main() {
 
   async function render(file) {
     const ep = await fetchJSON(`results/${file}`);
-    $('episode-title').textContent = `${ep.title} ｜ ${ep.date} ｜ 题库 ${ep.benchmarkVersion || '?'}`;
+    // 期号标题 + LIVE 红点脉冲（用 DOM 拼接，标题来自 JSON 不走 innerHTML 注入）
+    const titleEl = $('episode-title');
+    titleEl.innerHTML = '';
+    const dot = document.createElement('span');
+    dot.className = 'live-dot';
+    titleEl.appendChild(dot);
+    titleEl.appendChild(document.createTextNode(`${ep.title} ｜ ${ep.date} ｜ 题库 ${ep.benchmarkVersion || '?'}`));
     $('demo-banner').hidden = !ep.demo;
     if (ep.note) $('demo-banner').innerHTML = `${icon('alert', 15)} <b>示例占位数据</b>——${ep.note}`;
 
@@ -147,12 +153,15 @@ async function main() {
     // 表格：第 4 名起（不足 4 个模型时整表隐藏）
     const rest = models.slice(3);
     $('rest-wrap').style.display = rest.length ? '' : 'none';
+    // 分数章：附 --v 能量条（底部墨条按分值填充，缺分显示 — 不再误判为红色 0 分）
+    const scoreChip = (v) => v == null
+      ? '<td><span class="score-mini">—</span></td>'
+      : `<td><span class="score-mini ${scoreClass(v)}" style="--v:${Math.max(0, Math.min(100, v))}">${v}</span></td>`;
     $('lb-body').innerHTML = rest.map((m, i) => {
       const rank = i + 4;
       const b = badgeFor(m.total);
-      const cells = levelIds.map(l => `<td><span class="score-mini ${scoreClass(m.scores[l] ?? 0)}">${m.scores[l] ?? '—'}</span></td>`).join('');
-      const boardCells = [boardScore(m, offenseIds), boardScore(m, defenseIds)].map(v =>
-        `<td><span class="score-mini ${v == null ? '' : scoreClass(v)}">${v ?? '—'}</span></td>`).join('');
+      const cells = levelIds.map(l => scoreChip(m.scores[l] ?? null)).join('');
+      const boardCells = [boardScore(m, offenseIds), boardScore(m, defenseIds)].map(scoreChip).join('');
       return `<tr>
         <td class="rank"><span class="rk">${rank}</span></td>
         <td class="model-cell"><div class="name">${m.name}</div><div class="meta">${m.vendor || ''} · ${m.version || ''} · ${m.thinkingLevel || ''}</div></td>
@@ -169,7 +178,7 @@ async function main() {
     $('radar-wall').innerHTML = models.map((m, i) => {
       const vals = levelIds.map(l => m.scores[l] ?? 0);
       return `<div class="radar-card rv"><div class="t">${m.name}</div>
-        ${radarSVG(vals, levelIds.map(id => SHORT[id] || id), { size: 175, color: PALETTE[i % PALETTE.length] })}<div class="s"><b>${m.total.toFixed(1)}</b> 分</div></div>`;
+        ${radarSVG(vals, levelIds.map(id => SHORT[id] || id), { size: 175, color: PALETTE[i % PALETTE.length], sweep: true })}<div class="s"><b>${m.total.toFixed(1)}</b> 分</div></div>`;
     }).join('');
 
     // 成本榜：性价比 = 总分 ÷ 折算费用，高在前（"谁最便宜还最能打"）
@@ -188,6 +197,19 @@ async function main() {
         <td class="hint">¥${cny.toFixed(1)}</td>
         <td class="total-cell"><span class="ratio-big">${ratio.toFixed(1)}</span></td>
       </tr>`).join('') : '<tr><td colspan="7" class="hint">本期暂无成本数据</td></tr>';
+
+    // ---- 灵动增强：冠军星星闪烁 / 模型名解码 / 卡片倾斜 / 总分滚动 ----
+    const p1 = $('podium').querySelector('.podium-card.p1');
+    if (p1) twinkles(p1, 6);
+    document.querySelectorAll('.pc-name, .radar-card .t')
+      .forEach((el, i) => setTimeout(() => scramble(el), 200 + i * 70));
+    tilt('.podium-card, .radar-card');
+    document.querySelectorAll('#lb-body .total-cell').forEach((el, i) => {
+      const v = parseFloat(el.textContent);
+      if (isNaN(v)) return;
+      el.dataset.count = v.toFixed(1);
+      setTimeout(() => countUp(el), 260 + i * 80);
+    });
 
     observeReveals();
   }
