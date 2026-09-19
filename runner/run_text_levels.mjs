@@ -49,15 +49,25 @@ async function callModel(m, prompt) {
   }
   if (!r.ok) throw new Error(`HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
   const d = await r.json();
-  // 推理模型思考占满 token 时 content 可能为空，兜底取 reasoning_content
+  // 结束原因：OpenAI 系 finish_reason（stop/length/content_filter/tool_calls）；
+  // Anthropic 系 stop_reason（end_turn/max_tokens/stop_sequence/tool_use）。
+  // length / max_tokens = 回答被 max_tokens 截断，单独标注，不与完整回答混为一谈。
+  const finish = m.api === 'anthropic'
+    ? String(d.stop_reason || '')
+    : String(d.choices?.[0]?.finish_reason || '');
+  const truncated = finish === 'length' || finish === 'max_tokens';
   const msg = d.choices?.[0]?.message ?? {};
-  const text = m.api === 'anthropic'
+  // 判分只用最终回答 content：思考链（reasoning_content）不参与判分（避免长思考耗尽
+  // token 时把原始推理文本当答案、随机蹭中关键词污染分数），仅在 content 为空时存档备查。
+  let text = m.api === 'anthropic'
     ? (d.content || []).map(c => c.text || '').join('\n')
-    : String(msg.content || msg.reasoning_content || '');
+    : String(msg.content || '');
+  let reasoning = '';
+  if (!text.trim() && msg.reasoning_content) reasoning = String(msg.reasoning_content);
   const usage = m.api === 'anthropic'
     ? { in: d.usage?.input_tokens || 0, out: d.usage?.output_tokens || 0 }
     : { in: d.usage?.prompt_tokens || 0, out: d.usage?.completion_tokens || 0 };
-  return { text: String(text).trim(), usage, ms: Date.now() - t0 };
+  return { text: String(text).trim(), reasoning: reasoning.trim(), finish, truncated, usage, ms: Date.now() - t0 };
 }
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -96,7 +106,7 @@ async function main() {
   const outModels = [];
   for (const m of runnable) {
     const perLevelScores = {}, tokens = { in: 0, out: 0 };
-    let hardFail = 0;
+    let hardFail = 0, truncatedRuns = 0;
     for (const id of levelIds) {
       const lv = allLevels[id];
       const qScores = [];
@@ -108,7 +118,15 @@ async function main() {
             tokens.in += r.usage.in; tokens.out += r.usage.out;
             const s = scoreAnswer(r.text, q.scoring);
             sum += s.score; n++;
-            responses.push(`run${k + 1} score=${s.score}\n${r.text}`);
+            if (r.truncated) {
+              truncatedRuns++;
+              responses.push(`run${k + 1} score=${s.score} [⚠截断 finish_reason=${r.finish}，按已产出内容判分]\n${r.text}`);
+            } else {
+              responses.push(`run${k + 1} score=${s.score}${r.finish ? ` [finish_reason=${r.finish}]` : ''}\n${r.text}`);
+            }
+            if (r.reasoning) {
+              responses.push(`----（以下为思考链存档，未参与判分）----\n${r.reasoning}`);
+            }
           } catch (e) {
             responses.push(`run${k + 1} ERROR ${e.message}`);
             if (/401|403/.test(e.message)) hardFail++;
@@ -130,9 +148,11 @@ async function main() {
       scores: perLevelScores, total, tokens: { ...tokens },
       cost, currency: m.pricing?.currency || 'CNY',
       runs: args.runs, source: args.tag,
+      truncated: truncatedRuns,
     });
     console.log(`  → ${m.name} 总分 ${total}${cost != null ? ` ｜ 估算费用 ${cost} ${m.pricing?.currency || 'CNY'}` : ''}\n`);
     if (hardFail >= 3) console.warn(`  ⚠️ ${m.name} 多次鉴权失败，请检查 ${m.apiKeyEnv}`);
+    if (truncatedRuns > 0) console.warn(`  ⚠️ ${m.name} 有 ${truncatedRuns} 次回答被 max_tokens 截断（已按产出内容判分并在 raw 存档标注；占比高可考虑提高 max_tokens 后重跑该模型并注明参数）`);
   }
 
   // 写结果（合并进已有期文件）

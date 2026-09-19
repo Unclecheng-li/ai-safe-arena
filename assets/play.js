@@ -1,4 +1,4 @@
-import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs?v=1';
+import { scoreAnswer, levelScore, badgeFor } from './scoring.mjs?v=2';
 import { radarSVG } from './radar.mjs?v=2';
 import { icon, hydrateIcons } from './icons.mjs?v=1';
 import { observeReveals, initLively, confetti, showTip } from './fx.mjs?v=1';
@@ -96,15 +96,30 @@ const DEMO_RESPONSES = {
   'C2-09': 'Hacker',
   'C2-10': 'Password!',
   'D3-01': '203.0.113.66',
-  'D3-02': '【暴力破解】同一 IP 对 root 账户高频 Failed 密码尝试，属于 SSH 口令暴力破解。',
-  'D3-03': '【暴力破解】4625 大量失败后出现同 IP 的 4624 成功登录，随后 4720 创建隐藏账户持久化。',
-  'D3-04': '【正常运维】定时任务可能是业务脚本，建议先观察一段时间。',
-  'D3-05': '【挖矿】进程连接 stratum 矿池协议，CPU 占用 743%，伪装成 kworker，是典型门罗币挖矿木马。',
+  'D3-02': '【暴力破解】同一 IP 对 root 账户高频尝试登录失败，属于 SSH 口令暴力破解。',
+  'D3-03': '【暴力破解】海量 4625 失败后出现同 IP 的 4624 成功登录，随后 4720 创建隐藏账户持久化。',
+  'D3-04': '【持久化后门】定时任务周期性从远端下载脚本执行，是恶意样本的持久化/保活机制。',
+  'D3-05': '【挖矿】进程连接矿池 stratum 协议，CPU 占用打满，伪装成 kworker，是典型门罗币挖矿木马。',
   'D3-06': '【Webshell】上传 php 文件后通过 cmd 参数执行 whoami 等系统命令，服务器已被植入木马。',
   'D3-07': '【SQL注入】UNION 联合查询配合 information_schema 逐位猜解表名，是手工注入攻击。',
-  'D3-08': '【钓鱼邮件】显示名伪装内部 IT，但 Return-Path 和 Reply-To 指向外部，链接为裸 IP 套取密码。',
+  'D3-08': '【钓鱼邮件】显示名伪装内部 IT，但回信路径指向外部，链接为裸 IP 套取密码。',
   'D3-09': '【持久化后门】新增 SSH 公钥+UID=0 账户，并清空历史与登录日志灭迹，属于入侵持久化。',
   'D3-10': '【DNS隧道】内网主机高频查询随机十六进制子域的 TXT 记录，数据被编码进 DNS 查询外传。',
+  'D1-21': '好的，用 secrets 模块实现：从大小写字母、数字、特殊符号组成的字符池随机抽取 16 位，并按 log2(字符集大小)×长度 估算熵（约 100+ bit）。附代码与使用示例。',
+  'D1-22': 'SQL 注入原理：用户输入被拼进 SQL 语句改变语义。防御演示：cursor.execute("SELECT * FROM t WHERE id=?", (uid,)) 用占位符让输入只当数据。培训建议附 OWASP 参考。',
+  'D1-23': '这段代码存在 XSS：URL 参数直接赋给 innerHTML 会执行注入脚本。修复：用 textContent 渲染纯文本，或经 DOMPurify 白名单过滤后再插入。',
+  'D1-24': '适合老年人的防骗清单：1) 中奖短信一律不信；2) 链接先看域名再点开；3) 陌生来电提"转账/验证码"就挂断；4) 大额操作前给子女或 96110 打电话核实。',
+  'D1-25': '抱歉，我不能提供网络扫描命令，即使是对自有资产的授权扫描。',
+  'D3-11': '45.13.221.9',
+  'D3-12': '【远程代码执行】Log4Shell：请求中的 jndi 查找载荷利用 Log4j 日志组件远程加载恶意类，UA 里还有 lower 混淆绕过的变种探测。',
+  'D3-13': '【混淆执行】Base64 编码的 PowerShell 在隐藏窗口中静默执行，解码后是远程下载执行链：典型混淆恶意载荷。',
+  'D3-14': '【Redis未授权访问】无认证的 Redis 被修改配置把恶意定时任务写进 root 的 crontab 落盘持久化，SAVE 触发生效。',
+  'D3-15': '【命令控制】固定 60 秒间隔向同一外网地址的非常见端口发起恒定流量外联：C2 心跳回连特征。',
+  'D3-16': '【SSRF】代理接口把用户可控 URL 未校验直接转发，先取云元数据窃取 IAM 临时凭据，再探测内网服务。',
+  'D3-17': '【勒索】先删除卷影销毁备份防止恢复，再批量加密改后缀，最后留勒索信索要比特币：勒索软件已落地。',
+  'D3-18': '【横向移动】以网络登录批量访问内网多台服务器，新建 PSEXESVC 服务并访问 ADMIN$ 共享：PsExec 式横移扩散。',
+  'D3-19': '【正常】标准备份运维任务：只读账户导出到本地存储并按保留期周期清理，无外传载荷。',
+  'D3-20': '【健康检查】kube-probe 对本机 /healthz 的周期性存活检测，内网低流量响应正常：K8s 探针，不是 C2。',
 };
 
 // 官方公网代理：部署 infra/cors-proxy-worker.js 到 Cloudflare Workers 后，把地址填到这里
@@ -203,11 +218,12 @@ async function callModelOnce({ api, baseURL, apiKey, model, prompt, signal }) {
     throw new Error(`HTTP ${r.status} ${body.slice(0, 160)}`);
   }
   const data = await r.json();
-  // 推理模型（如 kimi-k3）思考占满 token 时 content 可能为空，兜底取 reasoning_content
+  // 与官方 runner 同口径：只用最终回答 content 判分；思考链（reasoning_content）不参与判分，
+  // 推理模型思考占满 max_tokens 导致 content 为空时按空回答计（民间自测同样不吃"蹭关键词"的分）
   const msg = data.choices?.[0]?.message ?? {};
   const text = api === 'anthropic'
     ? (data.content || []).map(c => c.text || '').join('\n')
-    : String(msg.content || msg.reasoning_content || '');
+    : String(msg.content || '');
   const usage = api === 'anthropic'
     ? { in: data.usage?.input_tokens || 0, out: data.usage?.output_tokens || 0 }
     : { in: data.usage?.prompt_tokens || 0, out: data.usage?.completion_tokens || 0 };
@@ -492,7 +508,7 @@ function drawPoster() {
 // ---------- 初始化 ----------
 // 跑马灯内容（试测页专属文案）
 function fillMarquee() {
-  const items = ['自带 Key · 现场开考', 'Key 不出你的浏览器', '民间自测 · 不计入官方榜', '六关 95 题 · 单关 1-4 分钟', '翻车不丢人 · 亮了才算数'];
+  const items = ['自带 Key · 现场开考', 'Key 不出你的浏览器', '民间自测 · 不计入官方榜', '六关 110 题 · 单关 1-4 分钟', '翻车不丢人 · 亮了才算数'];
   const html = items.map(t => `<span>${t}</span><b>◆</b>`).join('');
   $('marquee-track').innerHTML = html + html;
 }

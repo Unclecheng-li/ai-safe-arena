@@ -1,5 +1,5 @@
 import { radarSVG } from './radar.mjs?v=3';
-import { badgeFor } from './scoring.mjs?v=1';
+import { badgeFor } from './scoring.mjs?v=2';
 import { icon, hydrateIcons } from './icons.mjs?v=1';
 import { observeReveals, initLively, tilt, scramble, twinkles, countUp } from './fx.mjs?v=2';
 
@@ -79,7 +79,7 @@ function costCNY(m) {
 // 跑马灯内容（重复两遍实现无缝滚动）
 function fillMarquee() {
   const items = ['翻车现场 · 全程围观', '规则判分 · 不用 AI 裁判', '题库全开源 · CI 可复跑',
-    '六关 95 题 · 一题不放过', '进攻要打得准 · 底线要守得住', '成本透明 · 谁便宜谁上榜'];
+    '六关 110 题 · 一题不放过', '进攻要打得准 · 底线要守得住', '成本透明 · 谁便宜谁上榜'];
   const html = items.map(t => `<span>${t}</span><b>◆</b>`).join('');
   $('marquee-track').innerHTML = html + html;
 }
